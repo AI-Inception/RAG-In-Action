@@ -21,7 +21,7 @@
 ### 2.2 RAG在线检索架构
 
 <div align="center">
-<img style="display: block; margin: auto; width: 100%;" src="../image/online_retrieve.jpg">
+<img style="display: block; margin: auto; width: 100%;" src="https://github.com/open-kf/rag-gpt/blob/main/doc/online_retrieve.jpg">
 </div>
 
 ## 三、RAG流程
@@ -50,7 +50,7 @@ chunk的大小是一个需要重点考虑的参数，它取决于我们使用的
 
 为了给LLM提供足够的上下文以进行推理，同时给搜索提供足够具体的文本嵌入，我们需要一些折衷策略。较大的chunk可以捕获更多的上下文，但它们也会产生更多的噪音，需要更长的处理时间和更高的成本。而较小的chunk可能无法完全传达必要的上下文，但它们的噪音较少。
 
-以网页**`https://www.openim.io/en`**的文本内容为输入，按照上面3种策略进行文本分割。
+以网页`https://www.openim.io/en`的文本内容为输入，按照上面3种策略进行文本分割。
 
 1. 直接分段：
 	
