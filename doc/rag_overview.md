@@ -2,7 +2,7 @@
 
 ## 一、RAG简介
 
-大型语言模型（LLM）已经取得了显著的成功，尽管它们仍然面临重大的限制，特别是在特定领域或知识密集型任务中，尤其是在处理超出其训练数据或需要当前信息的查询时，常会产生“幻觉”现象。为了克服这些挑战，检索增强生成（RAG）通过从外部知识库检索相关文档块并进行语义相似度计算，增强了LLM的功能。通过引用外部知识，RAG有效地减少了生成事实不正确内容的问题。RAG目前是基于LLM系统中最受欢迎的架构，有许多产品基于RAG构建，使RAG成为推动聊天机器人发展和增强LLM在现实世界应用适用性的关键技术。
+大型语言模型（LLM）已经取得了显著的成功，尽管它们仍然面临重大的限制，特别是在特定领域或知识密集型任务中，尤其是在处理超出其训练数据或需要当前信息的查询时，常会产生“幻觉”现象。为了克服这些挑战，检索增强生成（RAG）通过从外部知识库检索相关文档chunk并进行语义相似度计算，增强了LLM的功能。通过引用外部知识，RAG有效地减少了生成事实不正确内容的问题。RAG目前是基于LLM系统中最受欢迎的架构，有许多产品基于RAG构建，使RAG成为推动聊天机器人发展和增强LLM在现实世界应用适用性的关键技术。
 
 ## 二、RAG架构
 
@@ -10,9 +10,9 @@
 
 **RAG在问答系统**中的一个典型应用主要包括三个步骤：
 
-1. **Indexing（索引）：**将文档分割成块，编码成向量，并存储在向量数据库中。
-2. **Retrieval（检索）：**根据语义相似度检索与问题最相关的前k个块。
-3. **Generation（生成）：**将原始问题和检索到的块一起输入到LLM中，生成最终答案。
+* **Indexing（索引）**：将文档分割成chunk，编码成向量，并存储在向量数据库中。
+* **Retrieval（检索）**：根据语义相似度检索与问题最相关的前k个chunk。
+* **Generation（生成）**：将原始问题和检索到的chunk一起输入到LLM中，生成最终答案。
 
 <div align="center">
 <img style="display: block; margin: auto; width: 100%;" src="../image/rag_overview.jpg">
@@ -30,60 +30,81 @@
 
 ### 3.1 索引
 
-索引是将文本分解成可管理的块的过程，是组织系统的关键步骤，面临三个主要挑战：
+索引是将文本分解成可管理的chunk的过程，是组织系统的关键步骤，面临三个主要挑战：
 
-* **不完整的内容表示**。块的语义信息受到分割方法的影响，导致在更长的上下文中重要信息的丢失或隐藏。
-* **不准确的块相似性搜索**。随着数据量的增加，检索中的噪声增多，导致频繁与错误数据匹配，使检索系统变得脆弱和不可靠。
-* **不明确的引用轨迹**。检索到的块可能来源于任何文档，缺乏引用路径，可能导致存在来自多个不同文档的块，尽管这些块在语义上相似，但包含的内容完全不同的主题。
+* **不完整的内容表示**：chunk的语义信息受到分割方法的影响，导致在更长的上下文中重要信息的丢失或隐藏。
+* **不准确的chunk相似性搜索**：随着数据量的增加，检索中的噪声增多，导致频繁与错误数据匹配，使检索系统变得脆弱和不可靠。
+* **不明确的引用轨迹**：检索到的chunk可能来源于任何文档，缺乏引用路径，可能导致存在来自多个不同文档的chunk，尽管这些chunk在语义上相似，但包含的内容完全不同的主题。
 
 #### 3.1.1 Chunking
 
-Transformer模型有固定的输入序列长度，即使输入上下文窗口很大，一个句子或几个句子的向量也比几页文本的平均向量更能代表它们的语义意义。所以我们需要对数据进行分块，将初始文档分割成一定大小的块，同时不丢失它们的意义（将文本分割成句子或段落，而不是将一个句子分成两部分）。
+Transformer模型有固定的输入序列长度，即使输入上下文窗口很大，一个句子或几个句子的向量也比几页文本的平均向量更能代表它们的语义意义。所以我们需要对数据进行分块，将初始文档分割成一定大小的chunk，同时不丢失它们的意义（将文本分割成句子或段落，而不是将一个句子分成两部分）。
 
-有多种文本分割实现能够完成这项任务，我们在实践中采用了以下3种策略：
+有多种文本切分策略能够完成这项任务，我们在实践中采用了以下3种策略：
 
-1. **直接分段：**将文本按照一定的规则进行分段处理后，转成可以进行语义搜索的格式。这里不需要调用模型进行额外处理，成本低，适合绝大多数应用场景。
-2. **生成问答对：**根据一定的规则，将文本拆成一段主题文本，调用LLM为该段主题文本生成问答对。这种处理方式有非常高的检索精度，但是会丢失部分文本细节，需要特别留意。
-3. **增强信息：**通过子索引以及调用LLM生成相关问题和摘要，来增加数据块的语义丰富度，更加有利于后面的检索。不过需要消耗更多的存储空间和增加LLM调用开销。
+* **直接分段**：将文本按照一定的规则进行分段处理后，转成可以进行语义搜索的格式。这里不需要调用模型进行额外处理，成本低，适合绝大多数应用场景。
+* **生成问答对**：根据一定的规则，将文本拆成一段主题文本，调用LLM为该段主题文本生成问答对。这种处理方式有非常高的检索精度，但是会丢失部分文本细节，需要特别留意。
+* **增强信息**：通过子索引以及调用LLM生成相关问题和摘要，来增加chunk的语义丰富度，更加有利于后面的检索。不过需要消耗更多的存储空间和增加LLM调用开销。
 
-块的大小是一个需要重点考虑的参数，它取决于我们使用的Embedding模型及其token的容量。标准的Transformer编码器模型，如基于BERT的`Sentence Transformer`最多处理`512`个token，而OpenAI的`text-embedding-3-small`能够处理更长的序列（`8191`个token）。
+chunk的大小是一个需要重点考虑的参数，它取决于我们使用的Embedding模型及其token的容量。标准的Transformer编码器模型，如基于BERT的`Sentence Transformer`最多处理`512`个token，而OpenAI的`text-embedding-3-small`能够处理更长的序列（`8191`个token）。
 
-为了给LLM提供足够的上下文以进行推理，同时给搜索提供足够具体的文本嵌入，我们需要一些折衷策略。较大的块可以捕获更多的上下文，但它们也会产生更多的噪音，需要更长的处理时间和更高的成本。而较小的块可能无法完全传达必要的上下文，但它们的噪音较少。
+为了给LLM提供足够的上下文以进行推理，同时给搜索提供足够具体的文本嵌入，我们需要一些折衷策略。较大的chunk可以捕获更多的上下文，但它们也会产生更多的噪音，需要更长的处理时间和更高的成本。而较小的chunk可能无法完全传达必要的上下文，但它们的噪音较少。
 
-* **滑动窗口**
+以网页**`https://www.openim.io/en`**的文本内容为输入，按照上面3种策略进行文本分割。
 
-平衡这些需求的一种简单方法是使用重叠的块。通过使用滑动窗口，可以增强语义过渡。然而，也存在一些限制，包括对上下文大小的控制不精确、有截断单词或句子的风险，以及缺乏语义考虑。
+1. 直接分段：
+	
+	切分后的chunk信息，总共10个chunk：
+	<div align="center">
+	<img style="display: block; margin: auto; width: 70%;" src="../image/split_1_chunk.jpg">
+	</div>
+	
+	```python
+	def split_long_section(section, max_length=1300):
+	    lines = section.split('\n')
+	    current_section = ""
+	    result = []
+	    for line in lines:
+	        # Add 1 for newline character when checking the length
+	        if len(current_section) + len(line) + 1 > max_length:
+	            if current_section:
+	                result.append(current_section)
+	                current_section = line  # Start a new paragraph
+	            else:
+	                # If a single line exceeds max length, treat it as its own paragraph
+	                result.append(line)
+	        else:
+	            if current_section:
+	                current_section += '\n' + line
+	            else:
+	                current_section = line
+	```
+	
+2. 生成问答对：
+	
+	切分后的chunk信息，总共28个chunk，每个chunk包含一对问答：
+	<div align="center">
+	<img style="display: block; margin: auto; width: 70%;" src="../image/split_2_chunk.jpg">
+	</div>
+	切分后的某个chunk的问答对信息：
+	<div align="center">
+	<img style="display: block; margin: auto; width: 70%;" src="../image/split_2_chunk_qa.jpg">
+	</div>
 
-```python
-def split_long_section(section, max_length=1300):
-    lines = section.split('\n')
-    current_section = ""
-    result = []
-    for line in lines:
-        # Add 1 for newline character when checking the length
-        if len(current_section) + len(line) + 1 > max_length:
-            if current_section:
-                result.append(current_section)
-                current_section = line  # Start a new paragraph
-            else:
-                # If a single line exceeds max length, treat it as its own paragraph
-                result.append(line)
-        else:
-            if current_section:
-                current_section += '\n' + line
-            else:
-                current_section = line
-```
+3. 增强信息：
+	
+	切分后的chunk信息，总共6个chunk，每个chunk都包含一批数据索引信息：
+	<div align="center">
+	<img style="display: block; margin: auto; width: 70%;" src="../image/split_3_chunk.jpg">
+	</div>
+	切分后的某个chunk的数据索引信息：
+	<div align="center">
+	<img style="display: block; margin: auto; width: 70%;" src="../image/split_3_chunk_indices.jpg">
+	</div>
 
-* **上下文丰富化**
+##### 3.1.1.1 滑动窗口
 
-这里的概念是为了获得更好的搜索质量而检索较小的块，并添加周围的上下文供LLM进行推理。
-有两个选项：通过在较小的检索块周围添加句子来扩展上下文，或者将文档递归地分成多个较大的父块，其中包含较小的子块。
-
-**句子窗口检索**
-
-在这个方案中，文档中的每个句子都被单独嵌入，这提供了查询与上下文余弦距离搜索的高准确性。
-为了在获取到最相关的单个句子后更好地推理出找到的上下文，我们通过在检索到的句子之前和之后添加k个句子来扩展上下文窗口，然后将这个扩展后的上下文发送给LLM。
+平衡这些需求的一种简单方法是使用重叠的chunk。通过使用滑动窗口，可以增强语义过渡。然而，也存在一些限制，包括对上下文大小的控制不精确、有截断单词或句子的风险，以及缺乏语义考虑。
 
 ```python
 final_result = []
@@ -96,11 +117,47 @@ for section in result:
     last_lines = last_two_lines
 ```
 
+##### 3.1.1.2 上下文丰富化
+
+这里的概念是为了获得更好的搜索质量而检索较小的chunk，并添加周围的上下文供LLM进行推理。
+有两个选项：通过在较小的检索chunk周围添加句子来扩展上下文，或者将文档递归地分成多个较大的父chunk，其中包含较小的子chunk。
+
+**句子窗口检索**
+
+在这个方案中，文档中的每个句子都被单独嵌入，这提供了查询与上下文余弦距离搜索的高准确性。
+为了在获取到最相关的单个句子后更好地推理出找到的上下文，我们通过在检索到的句子之前和之后添加k个句子来扩展上下文窗口，然后将这个扩展后的上下文发送给LLM。
+
+```python
+from llama_index import ServiceContext, VectorStoreIndex, StorageContext
+from llama_index.node_parser import SentenceWindowNodeParser
+
+def build_sentence_window_index(
+    document, llm, vector_store, embed_model="local:BAAI/bge-small-en-v1.5"
+):
+    # create the sentence window node parser w/ default settings
+    node_parser = SentenceWindowNodeParser.from_defaults(
+        window_size=3,
+        window_metadata_key="window",
+        original_text_metadata_key="original_text",
+    )
+    sentence_context = ServiceContext.from_defaults(
+        llm=llm,
+        embed_model=embed_model,
+        node_parser=node_parser
+    )
+    storage_context = StorageContext.from_defaults(vector_store=vector_store)
+    sentence_index = VectorStoreIndex.from_documents(
+        [document], service_context=sentence_context, storage_context=storage_context
+    )
+
+    return sentence_index
+```
+
 **父文档检索器**
 
-文档被分割成一个层次结构的块，然后最小的叶子块被发送到索引中。在检索时，我们检索k个叶子块，如果有n个块引用同一个父块，我们将它们替换为该父块并将其发送给LLM进行答案生成。
+文档被分割成一个层次结构的chunk，然后最小的叶子chunk被发送到索引中。在检索时，我们检索k个叶子chunk，如果有n个chunk引用同一个父chunk，我们将它们替换为该父chunk并将其发送给LLM进行答案生成。
 
-关键思想是将用于检索的块与用于合成的块分开。使用较小的块可以提高检索的准确性，而较大的块可以提供更多的上下文信息。具体来说，一种方法可以涉及检索较小的块，然后引用父ID以返回较大的块。或者，可以检索单个句子，并返回该句子周围的文本窗口。
+关键思想是将用于检索的chunk与用于合成的chunk分开。使用较小的chunk可以提高检索的准确性，而较大的chunk可以提供更多的上下文信息。具体来说，一种方法可以涉及检索较小的chunk，然后引用父ID以返回较大的chunk。或者，可以检索单个句子，并返回该句子周围的文本窗口。
 
 <div align="center">
 <img style="display: block; margin: auto; width: 70%;" src="../image/small_to_big.jpg">
@@ -127,9 +184,9 @@ for base_node in base_nodes:
 all_nodes_dict = {n.node_id: n for n in all_nodes}
 ```
 
-* **元数据附加**
+##### 3.1.1.3 元数据附加
 
-可以使用元数据信息对块进行丰富，例如URL、文件名、作者、时间戳、摘要或块可以回答的问题。随后，可以根据这些元数据对检索进行筛选，限制搜索范围。
+可以使用元数据信息对chunk进行丰富，例如URL、文件名、作者、时间戳、摘要，或者chunk可以回答的问题。随后，可以根据这些元数据对检索进行筛选，限制搜索范围。
 
 ```python
 async def aadd_content_embedding(self, data):
@@ -173,9 +230,9 @@ g_embeddings = OpenAIEmbeddings(
 
 #### 3.1.3 搜索索引
 
-* **向量存储索引**
+#### 3.1.3.1 向量存储索引
 
-RAG流程中的关键部分是搜索索引，存储chunk的向量化内容。最简单的实现使用平面索引，在查询向量和所有块向量之间进行距离计算。
+RAG流程中的关键部分是搜索索引，存储chunk的向量化内容。最简单的实现使用平面索引，在查询向量和所有chunk向量之间进行距离计算。
 
 一个优秀的搜索索引，需要确保在大规模元素上的检索效率，一般使用某种近似最近邻实现，如聚类、树或HNSW算法。
 
@@ -185,9 +242,9 @@ RAG流程中的关键部分是搜索索引，存储chunk的向量化内容。最
 
 | Distance          | Parameter | Equation                                                              |
 |-------------------|-----------|-----------------------------------------------------------------------|
-| Squared L2        | 'l2'      | d = \sum\left(A_i-B_i\right)^2                                    |
-| Inner product     | 'ip'      | d = 1.0 - \sum\left(A_i \times B_i\right)                         |
-| Cosine similarity | 'cosine'  | d = 1.0 - \frac{\sum\left(A_i \times B_i\right)}{\sqrt{\sum\left(A_i^2\right)} \cdot \sqrt{\sum\left(B_i^2\right)}} |
+| Squared L2        | 'l2'      | \$d = \sum\left(A_i-B_i\right)^2\$                                    |
+| Inner product     | 'ip'      | \$d = 1.0 - \sum\left(A_i \times B_i\right)\$                         |
+| Cosine similarity | 'cosine'  | \$d = 1.0 - \frac{\sum\left(A_i \times B_i\right)}{\sqrt{\sum\left(A_i^2\right)} \cdot \sqrt{\sum\left(B_i^2\right)}}\$ |
 
 修改Chrome的距离函数：
 
@@ -208,9 +265,9 @@ class DocumentEmbedder:
 
 除了向量索引，还可以考虑支持其它更简单的索引实现，如列表索引、树索引和关键词表索引。
 
-* **层级索引**
+#### 3.1.3.2 层级索引
 
-如果需要从许多文档中检索信息，我们需要能够高效地在其中搜索，找到相关信息并将其合成一个带有来源引用的单一答案。对于大型数据库，一种有效的方法是创建两个索引，一个由摘要组成，另一个由文档块组成，并进行两步搜索，首先通过摘要筛选出相关文档，然后仅在这个相关组内进行搜索。
+如果需要从许多文档中检索信息，我们需要能够高效地在其中搜索，找到相关信息并将其合成一个带有来源引用的单一答案。对于大型数据库，一种有效的方法是创建两个索引，一个由摘要组成，另一个由文档chunk组成，并进行两步搜索，首先通过摘要筛选出相关文档，然后仅在这个相关组内进行搜索。
 
 <div align="center">
 <img style="display: block; margin: auto; width: 70%;" src="../image/hierarchical_indices.jpg">
@@ -235,13 +292,12 @@ RAG的一个主要挑战是它直接依赖用户的原始查询作为检索的�
 将单一查询扩展为多个查询可以丰富查询的内容，提供更多的上下文来解决缺乏特定细微差别的问题，从而确保生成答案的最佳相关性。
 
 * **Multi-Query（多查询）**
-通过Prompt工程来扩展查询，这些查询可以并行执行。查询的扩展不是随机的，而是经过精心设计的。这种设计的两个关键标准是查询的多样性和覆盖范围。使用多个查询的一个挑战是可能稀释用户原始意图的风险。为了缓解这一问题，我们可以指导模型在Prompt工程中给予原始查询更大的权重。
+
+	通过Prompt工程来扩展查询，这些查询可以并行执行。查询的扩展不是随机的，而是经过精心设计的。这种设计的两个关键标准是查询的多样性和覆盖范围。使用多个查询的一个挑战是可能稀释用户原始意图的风险。为了缓解这一问题，我们可以指导模型在Prompt工程中给予原始查询更大的权重。
 
 * **Sub-Query（子查询）**
-子问题规划过程代表了生成必要的子问题，当结合起来时，这些子问题可以帮助完全回答原始问题。从原理上讲，这个过程与查询扩展类似。具体来说，一个复杂的问题可以使用从简到繁的提示方法分解为一系列更简单的子问题。
 
-* **CoVe（验证链）**
-另一种查询扩展方法涉及使用Meta AI提出的Chain-of-Verification(CoVe)。扩展的查询经过LLM验证，以达到减少幻觉的效果。经验证的扩展查询通常表现出更高的可靠性。
+	子问题规划过程代表了生成必要的子问题，当结合起来时，这些子问题可以帮助完全回答原始问题。从原理上讲，这个过程与查询扩展类似。具体来说，一个复杂的问题可以使用从简到繁的提示方法分解为一系列更简单的子问题。
 
 #### 3.2.2 Query Transformation
 
@@ -249,9 +305,9 @@ RAG的一个主要挑战是它直接依赖用户的原始查询作为检索的�
 
 如果查询很复杂，LLM可以将其分解为几个子查询。例如，如果你问：
 
-* “在Github上，private-gpt和rag-gpt哪个项目的星星更多？”，由于我们不太可能在语料库中的某些文本中找到直接的比较，因此将这个问题分解为两个子查询是有意义的，这些子查询假定了更简单和更具体的信息检索：
-* “private-gpt在Github上有多少星星？”
-* “rag-gpt在Github上有多少星星？”
+* “在Github上，[**private-gpt**](https://github.com/zylon-ai/private-gpt)和[**rag-gpt**](https://github.com/open-kf/rag-gpt)哪个项目的star更多？”，由于我们不太可能在语料库中的某些文本中找到直接的比较，因此将这个问题分解为两个子查询是有意义的，这些子查询假定了更简单和更具体的信息检索：
+* “[**private-gpt**](https://github.com/zylon-ai/private-gpt)在Github上有多少star？”
+* “[**rag-gpt**](https://github.com/open-kf/rag-gpt)在Github上有多少star？”
 
 这些查询将并行执行，然后将检索到的上下文合并在一个提示中，供LLM合成对初始查询的最终答案。
 
@@ -259,12 +315,12 @@ RAG的一个主要挑战是它直接依赖用户的原始查询作为检索的�
 <img style="display: block; margin: auto; width: 70%;" src="../image/query_transformation.jpg">
 </div>
 
-1. **退后式提示（Step-back prompting）**，使用LLM生成一个更一般的查询，为其检索我们获得的更一般或高层次的上下文，有助于支撑我们对原始查询的回答。也会对原始查询执行检索，两种上下文都会在最终答案生成步骤中输入到LLM中。
-2. **查询重写（Query re-writing）**，原始查询并不总是最适合LLM检索的，特别是在现实世界的场景中。因此，我们可以提示LLM重写查询。除了使用LLM进行查询重写之外，还可以使用专门的较小语言模型，例如RRR（Rewrite-retrieve-read）
+1. **退后式提示**，使用LLM生成一个更一般的查询，为其检索我们获得的更一般或高层次的上下文，有助于支撑我们对原始查询的回答。也会对原始查询执行检索，两种上下文都会在最终答案生成步骤中输入到LLM中。
+2. **查询重写**，原始查询并不总是最适合LLM检索的，特别是在现实世界的场景中。因此，我们可以提示LLM重写查询。除了使用LLM进行查询重写之外，还可以使用专门的较小语言模型，例如RRR（Rewrite-retrieve-read）
 
-**[OpenIM文档网站](https://docs.openim.io/)**使用**[rag-gpt](https://github.com/open-kf/rag-gpt)**搭建了网站智能客服，可以快速验证**`查询重写`**策略的效果。
+[**OpenIM文档网站**](https://docs.openim.io/)使用[**rag-gpt**](https://github.com/open-kf/rag-gpt)搭建了网站智能客服，可以快速验证`查询重写`策略的效果。
 
-* 在没有**`查询重写`**策略时，如果用户输入`"如何部署"`，召回的文档的相关性分数都小于0.5，会都被过滤掉，最后GPT无法获得足够的上下文信息，无法回答。
+* 在没有`查询重写`策略时，如果用户输入`"如何部署"`，召回的文档的相关性分数都小于0.5，会都被过滤掉，最后GPT无法获得足够的上下文信息，无法回答。
 
 <div align="center">
 <img style="display: block; margin: auto; width: 70%;" src="../image/openim_case1_log.jpg">
@@ -274,28 +330,28 @@ RAG的一个主要挑战是它直接依赖用户的原始查询作为检索的�
 <img style="display: block; margin: auto; width: 70%;" src="../image/openim_case1_result.jpg">
 </div>
 
-* 增加**`查询重写`**策略时，如果用户输入`"如何部署"`，query会被改写为`"如何部署\tOpenIM"`，此时召回的5篇文档的相关性分数都是大于0.5的，可以作为上下文传给GPT，最终GPT给出响应的答案。
+* 增加`查询重写`策略时，如果用户输入`"如何部署"`，query会被改写为`"如何部署\tOpenIM"`，此时召回的5篇文档的相关性分数都是大于0.5的，可以作为上下文传给GPT，最终GPT给出响应的答案。
 
-<div align="center">
-<img style="display: block; margin: auto; width: 70%;" src="../image/openim_case2_log.jpg">
-</div>
-
-<div align="center">
-<img style="display: block; margin: auto; width: 70%;" src="../image/openim_case2_result.jpg">
-</div>
-
-```python
-def preprocess_query(query, site_title):
-    # Convert to lowercase for case-insensitive comparison
-    query_lower = query.lower()
-    site_title_lower = site_title.lower()
-    # Check if the site title is already included in the query
-    if site_title_lower not in query_lower:
-        adjust_query =  f"{query}\t{site_title}"
-        logger.warning(f"adjust_query:'{adjust_query}'")
-        return adjust_query
-    return query
-```
+	<div align="center">
+	<img style="display: block; margin: auto; width: 70%;" src="../image/openim_case2_log.jpg">
+	</div>
+	
+	<div align="center">
+	<img style="display: block; margin: auto; width: 70%;" src="../image/openim_case2_result.jpg">
+	</div>
+	
+	```python
+	def preprocess_query(query, site_title):
+	    # Convert to lowercase for case-insensitive comparison
+	    query_lower = query.lower()
+	    site_title_lower = site_title.lower()
+	    # Check if the site title is already included in the query
+	    if site_title_lower not in query_lower:
+	        adjust_query =  f"{query}\t{site_title}"
+	        logger.warning(f"adjust_query:'{adjust_query}'")
+	        return adjust_query
+	    return query
+	```
 
 #### 3.2.3 Query Construction
 
@@ -310,7 +366,7 @@ def preprocess_query(query, site_title):
 
 查询路由是一个基于LLM的决策制定步骤，针对用户的查询决定接下来要做什么。通常的选项包括进行总结、对某些数据索引执行搜索，或尝试多种不同的路由然后将它们的输出合成一个答案。
 
-查询路由器也用于选择一个索引，或者更广泛地说，一个数据存储位置，来发送用户查询。无论是你拥有多个数据源，例如经典的向量存储、图数据库或关系数据库，还是你拥有一个索引层级。对于多文档存储来说，一个典型的案例可能是一个摘要索引和另一个文档块向量索引。
+查询路由器也用于选择一个索引，或者更广泛地说，一个数据存储位置，来发送用户查询。无论是你拥有多个数据源，例如经典的向量存储、图数据库或关系数据库，还是你拥有一个索引层级。对于多文档存储来说，一个典型的案例可能是一个摘要索引和另一个文档chunk向量索引。
 
 定义查询路由器包括设置它可以做出的选择。路由选项的选择是通过LLM调用执行的，其结果以预定义格式返回，用于将查询路由到给定的索引，或者，如果我们谈论的是族群行为，路由到子链或甚至如下所示的多文档代理方案中的其他代理。
 
@@ -321,15 +377,15 @@ from langchain_core.prompts import PromptTemplate
 from langchain_core.runnables import RunnableLambda, RunnablePassthrough
 from langchain_openai import OpenAIEmbeddings
 
-physics_template = """You are a very smart physics professor. \
-You are great at answering questions about physics in a concise and easy to understand manner. \
+physics_template = f"""You are a very smart physics professor.
+You are great at answering questions about physics in a concise and easy to understand manner.
 When you don't know the answer to a question you admit that you don't know.
 
 Here is a question:
 {query}"""
 
-math_template = """You are a very good mathematician. You are great at answering math questions. \
-You are so good because you are able to break down hard problems into their component parts, \
+math_template = f"""You are a very good mathematician. You are great at answering math questions.
+You are so good because you are able to break down hard problems into their component parts,
 answer the component parts, and then put them together to answer the broader question.
 
 Here is a question:
@@ -339,14 +395,12 @@ embeddings = OpenAIEmbeddings()
 prompt_templates = [physics_template, math_template]
 prompt_embeddings = embeddings.embed_documents(prompt_templates)
 
-
 def prompt_router(input):
     query_embedding = embeddings.embed_query(input["query"])
     similarity = cosine_similarity([query_embedding], prompt_embeddings)[0]
     most_similar = prompt_templates[similarity.argmax()]
     print("Using MATH" if most_similar == math_template else "Using PHYSICS")
     return PromptTemplate.from_template(most_similar)
-
 
 chain = (
     {"query": RunnablePassthrough()}
@@ -362,9 +416,9 @@ chain = (
 
 需要考虑以下三个主要因素：
 
-* **检索效率：**检索过程应该高效，能够快速地返回相关的文档或答案。这要求在检索过程中采用高效的算法和数据结构，以及优化的索引和查询方法。
-* **嵌入质量：**嵌入向量应该能够准确地捕捉文本的语义信息。这要求使用高质量的预训练语言模型，以确保生成的嵌入向量能够在潜在空间中准确地表示文本的语义相似性。
-* **任务、数据和模型的对齐：**检索过程需要根据具体的任务需求和可用的数据来选择合适的模型和方法。任务、数据和模型之间的对齐是关键，可以通过合理的数据预处理、模型选择和训练来提高检索的效果。
+* **检索效率**：检索过程应该高效，能够快速地返回相关的文档或答案。这要求在检索过程中采用高效的算法和数据结构，以及优化的索引和查询方法。
+* **嵌入质量**：嵌入向量应该能够准确地捕捉文本的语义信息。这要求使用高质量的预训练语言模型，以确保生成的嵌入向量能够在潜在空间中准确地表示文本的语义相似性。
+* **任务、数据和模型的对齐**：检索过程需要根据具体的任务需求和可用的数据来选择合适的模型和方法。任务、数据和模型之间的对齐是关键，可以通过合理的数据预处理、模型选择和训练来提高检索的效果。
 
 #### 3.3.1 稀疏检索器
 
@@ -375,9 +429,8 @@ chain = (
 基于神经网络的密集编码模型包括几种类型：
 
 * 基于BERT架构构建的编码器-解码器语言模型，如ColBERT。
-* 综合多任务微调模型，如BGE和百川文本嵌入。
+* 综合多任务微调模型，如BGE文本嵌入。
 * 基于云API的模型，如OpenAI-Ada-002和Cohere Embedding。
-* 下一代加速编码框架Dragon+，专为大规模数据应用设计。
 
 #### 3.3.3 混合检索
 
@@ -385,36 +438,35 @@ chain = (
 
 ### 3.4 Post-Retrieval
 
-直接检索整个文档块并将它们直接输入到LLM的上下文环境中并非最佳选择。后处理文档可以帮助LLM更好地利用上下文信息。
+直接检索整个文档chunk并将它们直接输入到LLM的上下文环境中并非最佳选择。后处理文档可以帮助LLM更好地利用上下文信息。
 
 主要挑战包括：
 
 * **丢失中间部分**。像人类一样，LLM倾向于只记住长文本的开始和结束部分，而忘记中间部分。
-* **噪声/反事实块**。检索到的噪声多或事实上矛盾的文档可能会影响最终的检索生成。
+* **噪声/反事实chunk**。检索到的噪声多或事实上矛盾的文档可能会影响最终的检索生成。
 * **上下文窗口**。尽管检索到了大量相关内容，但大型模型中对上下文信息长度的限制阻止了包含所有这些内容。
 
 
 #### 3.4.1 Reranking
 
-不改变内容或长度的情况下，对检索到的文档块进行重新排序，以增强对LLM更为关键的文档块的可见性。具体来说：
+不改变内容或长度的情况下，对检索到的文档chunk进行重新排序，以增强对LLM更为关键的文档chunk的可见性。具体来说：
 
-* 基于规则的重新排序
-根据特定规则，计算度量来重新排序块。常见的度量包括：
+1. 基于规则的重新排序
+	根据特定规则，计算度量来重新排序chunk。常见的度量包括：
+	
+	* 多样性
+	* 相关性
+	* 最大边际相关性（Maximal Marginal Relevance）
+	
+	MMR的背后思想是减少冗余并增加结果的多样性，它用于文本摘要。MMR根据查询相关性和信息新颖性的组合标准选择最终关键短语列表中的短语。
 
-	* 多样性Diversity
-	* 相关性Relevance
-	* MMR（Maximal Marginal Relevance 最大边际相关性，1998年）
+2. Model-base Rerank
 
-MMR的背后思想是减少冗余并增加结果的多样性，它用于文本摘要。MMR根据查询相关性和信息新颖性的组合标准选择最终关键短语列表中的短语。
-
-* Model-base Rerank
-
-使用语言模型对文档块进行重新排序，可选方案包括：
-
+	使用语言模型对文档chunk进行重新排序，可选方案包括：
+	
 	* 来自BERT系列的编解码器模型，如SpanBERT
 	* 专门的重新排序模型，如Cohere rerank或bge-reranker-large
 	* 通用大型语言模型，如GPT-4
-
 
 #### 3.4.2 过滤
 
@@ -424,6 +476,32 @@ MMR的背后思想是减少冗余并增加结果的多样性，它用于文本�
 
 这是在将我们检索到的上下文输入LLM以获取最终答案之前的最后一步。
 
+```python
+    # Build the context for prompt
+    recall_domain_set = set()
+    filtered_results = []
+    for doc, score in results:
+        if score > MIN_RELEVANCE_SCORE:
+            filtered_results.append((doc, score))
+            domain = urlparse(doc.metadata['source']).netloc
+            recall_domain_set.add(domain)
+
+    if filtered_results:
+        filtered_context = "\n--------------------\n".join([
+            f"URL: {doc.metadata['source']}\nRevelance score: {score}\nContent: {doc.page_content}"
+            for doc, score in filtered_results
+        ])
+        context = f"""Documents size: {len(filtered_results)}
+Documents(Sort by Relevance Score from high to low):
+{filtered_context}"""
+    else:
+        context = f"""Documents size: 0
+No documents found directly related to the current query.
+If the query is similar to greeting phrases like ['Hi', 'Hello', 'Who are you?'], including greetings in other languages such as Chinese, Russian, French, Spanish, German, Japanese, Arabic, Hindi, Portuguese, Korean, etc. The bot will offer a friendly standard response, guiding users to seek information or services detailed on the `{site_title}` website.
+For other queries, please give the answer "Unfortunately, there is no information available about '{query}' on the `{site_title}` website. I'm here to assist you with information related to the `{site_title}` website. If you have any specific queries about our services or need help, feel free to ask, and I'll do my best to provide you with accurate and relevant answers."
+"""
+```
+
 #### 3.4.3 参考引用
 
 这个更多是一种工具而非检索改进技术，尽管它非常重要。
@@ -432,7 +510,7 @@ MMR的背后思想是减少冗余并增加结果的多样性，它用于文本�
 有几种方法可以做到这一点：
 
 1. 将这个引用任务插入到我们的提示中，并要求LLM提及所使用来源的ID。
-2. 将生成的响应的部分与我们索引中的原始文本块进行匹配。
+2. 将生成的响应的部分与我们索引中的原始文本chunk进行匹配。
 
 ```python
 prompt = f"""
@@ -523,14 +601,14 @@ history_context = "\n--------------------\n".join([f"Previous Query: {item['quer
 
 响应综合的主要方法有：
 
-1. 通过将检索到的上下文逐块送入LLM，迭代地完善答案。
+1. 通过将检索到的上下文逐chunk送入LLM，迭代地完善答案。
 2. 将检索到的上下文进行总结，以适应提示。
-3. 基于不同的上下文块生成多个答案，然后将它们连接或进行总结。
+3. 基于不同的上下文chunk生成多个答案，然后将它们连接或进行总结。
 
 #### 3.5.3 Postprocess Response
 
 如果不是采用流式输出，在获取到LLM生成的结果后，我们可以根据具体业务场景，进行最后干预。
-比如**[OpenIM文档网站](https://docs.openim.io/)**的网站客服机器人，只需要回答和OpenIM网站相关的问题，如果用户咨询其它问题或者LLM给出了和网站无关的答案，都需要进行结果干预。
+比如[**OpenIM文档网站**](https://docs.openim.io/)的网站客服机器人，只需要回答和OpenIM网站相关的问题，如果用户咨询其它问题或者LLM给出了和网站无关的答案，都需要进行结果干预。
 
 <div align="center">
 <img style="display: block; margin: auto; width: 70%;" src="../image/postprocess_case_log.jpg">
@@ -585,9 +663,9 @@ RAG的核心任务仍然是问答（QA），包括传统的单跳/多跳QA、多
 
 主要的评估目标包括：
 
-* **检索质量：**评估检索质量对于确定检索组件提取的上下文的有效性至关重要。使用来自搜索引擎、推荐系统和信息检索系统领域的标准指标来衡量RAG检索模块的性能。常用的指标包括命中率（Hit Rate）、MRR和NDCG等。
+* **检索质量**：评估检索质量对于确定检索组件提取的上下文的有效性至关重要。使用来自搜索引擎、推荐系统和信息检索系统领域的标准指标来衡量RAG检索模块的性能。常用的指标包括命中率（Hit Rate）、MRR和NDCG等。
 
-* **生成质量：**生成质量的评估关注生成器从检索到的上下文中合成连贯和相关的答案的能力。根据内容的目标，这种评估可以分为无标签内容和有标签内容两种。对于无标签内容，评估包括生成答案的忠实度、相关性和无害性。相反，对于有标签内容，重点是模型生成的信息准确性。此外，检索和生成质量的评估可以通过人工或自动评估方法进行。
+* **生成质量**：生成质量的评估关注生成器从检索到的上下文中合成连贯和相关的答案的能力。根据内容的目标，这种评估可以分为无标签内容和有标签内容两种。对于无标签内容，评估包括生成答案的忠实度、相关性和无害性。相反，对于有标签内容，重点是模型生成的信息准确性。此外，检索和生成质量的评估可以通过人工或自动评估方法进行。
 
 综上所述，RAG模型的评估涉及检索质量和生成质量的评估，并使用特定任务的评估指标进行衡量。评估可以采用手动或自动评估方法。
 
@@ -614,9 +692,9 @@ RAG模型的评估实践强调三个主要的质量得分和四个基本能力�
 
 有几种用于评估RAG系统性能的框架，它们分享了使用几个独立指标的思想，例如`整体答案相关性`、`答案忠实度`、`准确性`和`检索到的上下文相关性`。
 
-**[Ragas](https://docs.ragas.io/en/stable/)**，使用`忠实度`和`答案相关性`作为生成答案质量的指标，而对于RAG模型的检索部分，则使用上下文的`精确率`和`召回率`。
+[**Ragas**](https://docs.ragas.io/en/stable/)，使用`忠实度`和`答案相关性`作为生成答案质量的指标，而对于RAG模型的检索部分，则使用上下文的`精确率`和`召回率`。
 
-**[Truelens](https://www.trulens.org/)**，提出了RAG三元组：
+[**Truelens**](https://www.trulens.org/)，提出了RAG三元组：
 * 检索到的上下文与查询的相关性。
 * 忠实度（LLM答案在提供的上下文中的支持程度）。
 * 答案与查询的相关性。
@@ -627,14 +705,13 @@ RAG流程中的关键且最可控的指标是检索到的上下文相关性，�
 
 目前RAG技术取得了较大进展，主要体现在以下几个方面：
 
-* **增强的数据获取：**RAG已经超越了传统的非结构化数据，现在包括半结构化和结构化数据，重点是对结构化数据进行预处理，以改善检索并减少模型对外部知识源的依赖。
-* **整合的技术：**RAG正在与其它技术整合，包括使用微调、适配器模块和强化学习来增强检索能力。
-* **可调适的检索过程：**检索过程已经发展到支持多轮检索增强，利用检索内容指导生成过程，反之亦然。此外，自主判断和LLM的使用通过确定是否需要检索，提高了回答问题的效率。
+* **增强的数据获取**：RAG已经超越了传统的非结构化数据，现在包括半结构化和结构化数据，重点是对结构化数据进行预处理，以改善检索并减少模型对外部知识源的依赖。
+* **整合的技术**：RAG正在与其它技术整合，包括使用微调、适配器模块和强化学习来增强检索能力。
+* **可调适的检索过程**：检索过程已经发展到支持多轮检索增强，利用检索内容指导生成过程，反之亦然。此外，自主判断和LLM的使用通过确定是否需要检索，提高了回答问题的效率。
 
 在生产环境中，除了答案相关性和忠实度之外，RAG系统面临的主要挑战是`响应速度`和`健壮性`。
 
 RAG的应用范围正在扩展到`多模态领域`，将其原理应用于解释和处理图片、视频和代码等多种数据形式。这一拓展突显了RAG在人工智能部署中的重要实际意义，吸引了学术界和工业界的兴趣。以RAG为中心的人工智能应用和支持工具的不断发展证明了RAG生态系统的壮大。随着RAG应用领域的扩大，有必要完善评估方法学，以跟上其发展的步伐。确保准确而具有代表性的性能评估对于充分捕捉RAG对人工智能研究与开发社区的贡献至关重要。
-
 
 
 
