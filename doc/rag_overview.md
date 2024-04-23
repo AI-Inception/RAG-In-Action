@@ -477,6 +477,15 @@ chain = (
 这是在将我们检索到的上下文输入LLM以获取最终答案之前的最后一步。
 
 ```python
+def search_document(self, query, k):
+    # Return docs and relevance scores in the range [0, 1].
+    # 0 is dissimilar, 1 is most similar.
+    return self.chroma_obj.similarity_search_with_relevance_scores(query, k=k)
+```
+
+使用`similarity_search_with_relevance_scores(query: str, k: int = 4, **kwargs: Any) → List[Tuple[Document, float]]`来从Chroma中召回文档，并返回relevance score，可以根据业务具体需求场景和测试日志，设置`MIN_RELEVANCE_SCORE`，过滤掉低质的文档。
+
+```python
     # Build the context for prompt
     recall_domain_set = set()
     filtered_results = []
