@@ -1,4 +1,4 @@
-# RAG理论&实践
+# RAG技术全解析：打造下一代智能问答系统
 
 ## 一、RAG简介
 
@@ -53,54 +53,54 @@ chunk的大小是一个需要重点考虑的参数，它取决于我们使用的
 以网页`https://www.openim.io/en`的文本内容为输入，按照上面3种策略进行文本分割。
 
 1. 直接分段：
-	
-	切分后的chunk信息，总共10个chunk：
-	<div align="center">
-	<img style="display: block; margin: auto; width: 70%;" src="../image/split_1_chunk.jpg">
-	</div>
-	
-	```python
-	def split_long_section(section, max_length=1300):
-	    lines = section.split('\n')
-	    current_section = ""
-	    result = []
-	    for line in lines:
-	        # Add 1 for newline character when checking the length
-	        if len(current_section) + len(line) + 1 > max_length:
-	            if current_section:
-	                result.append(current_section)
-	                current_section = line  # Start a new paragraph
-	            else:
-	                # If a single line exceeds max length, treat it as its own paragraph
-	                result.append(line)
-	        else:
-	            if current_section:
-	                current_section += '\n' + line
-	            else:
-	                current_section = line
-	```
-	
+    
+    切分后的chunk信息，总共10个chunk：
+    <div align="center">
+    <img style="display: block; margin: auto; width: 70%;" src="../image/split_1_chunk.jpg">
+    </div>
+    
+    ```python
+    def split_long_section(section, max_length=1300):
+        lines = section.split('\n')
+        current_section = ""
+        result = []
+        for line in lines:
+            # Add 1 for newline character when checking the length
+            if len(current_section) + len(line) + 1 > max_length:
+                if current_section:
+                    result.append(current_section)
+                    current_section = line  # Start a new paragraph
+                else:
+                    # If a single line exceeds max length, treat it as its own paragraph
+                    result.append(line)
+            else:
+                if current_section:
+                    current_section += '\n' + line
+                else:
+                    current_section = line
+    ```
+    
 2. 生成问答对：
-	
-	切分后的chunk信息，总共28个chunk，每个chunk包含一对问答：
-	<div align="center">
-	<img style="display: block; margin: auto; width: 70%;" src="../image/split_2_chunk.jpg">
-	</div>
-	切分后的某个chunk的问答对信息：
-	<div align="center">
-	<img style="display: block; margin: auto; width: 70%;" src="../image/split_2_chunk_qa.jpg">
-	</div>
+    
+    切分后的chunk信息，总共28个chunk，每个chunk包含一对问答：
+    <div align="center">
+    <img style="display: block; margin: auto; width: 70%;" src="../image/split_2_chunk.jpg">
+    </div>
+    切分后的某个chunk的问答对信息：
+    <div align="center">
+    <img style="display: block; margin: auto; width: 70%;" src="../image/split_2_chunk_qa.jpg">
+    </div>
 
 3. 增强信息：
-	
-	切分后的chunk信息，总共6个chunk，每个chunk都包含一批数据索引信息：
-	<div align="center">
-	<img style="display: block; margin: auto; width: 70%;" src="../image/split_3_chunk.jpg">
-	</div>
-	切分后的某个chunk的数据索引信息：
-	<div align="center">
-	<img style="display: block; margin: auto; width: 70%;" src="../image/split_3_chunk_indices.jpg">
-	</div>
+    
+    切分后的chunk信息，总共6个chunk，每个chunk都包含一批数据索引信息：
+    <div align="center">
+    <img style="display: block; margin: auto; width: 70%;" src="../image/split_3_chunk.jpg">
+    </div>
+    切分后的某个chunk的数据索引信息：
+    <div align="center">
+    <img style="display: block; margin: auto; width: 70%;" src="../image/split_3_chunk_indices.jpg">
+    </div>
 
 ##### 3.1.1.1 滑动窗口
 
@@ -293,11 +293,11 @@ RAG的一个主要挑战是它直接依赖用户的原始查询作为检索的�
 
 * **Multi-Query（多查询）**
 
-	通过Prompt工程来扩展查询，这些查询可以并行执行。查询的扩展不是随机的，而是经过精心设计的。这种设计的两个关键标准是查询的多样性和覆盖范围。使用多个查询的一个挑战是可能稀释用户原始意图的风险。为了缓解这一问题，我们可以指导模型在Prompt工程中给予原始查询更大的权重。
+    通过Prompt工程来扩展查询，这些查询可以并行执行。查询的扩展不是随机的，而是经过精心设计的。这种设计的两个关键标准是查询的多样性和覆盖范围。使用多个查询的一个挑战是可能稀释用户原始意图的风险。为了缓解这一问题，我们可以指导模型在Prompt工程中给予原始查询更大的权重。
 
 * **Sub-Query（子查询）**
 
-	子问题规划过程代表了生成必要的子问题，当结合起来时，这些子问题可以帮助完全回答原始问题。从原理上讲，这个过程与查询扩展类似。具体来说，一个复杂的问题可以使用从简到繁的提示方法分解为一系列更简单的子问题。
+    子问题规划过程代表了生成必要的子问题，当结合起来时，这些子问题可以帮助完全回答原始问题。从原理上讲，这个过程与查询扩展类似。具体来说，一个复杂的问题可以使用从简到繁的提示方法分解为一系列更简单的子问题。
 
 #### 3.2.2 Query Transformation
 
@@ -332,26 +332,26 @@ RAG的一个主要挑战是它直接依赖用户的原始查询作为检索的�
 
 * 增加`查询重写`策略时，如果用户输入`"如何部署"`，query会被改写为`"如何部署\tOpenIM"`，此时召回的5篇文档的相关性分数都是大于0.5的，可以作为上下文传给GPT，最终GPT给出响应的答案。
 
-	<div align="center">
-	<img style="display: block; margin: auto; width: 70%;" src="../image/openim_case2_log.jpg">
-	</div>
-	
-	<div align="center">
-	<img style="display: block; margin: auto; width: 70%;" src="../image/openim_case2_result.jpg">
-	</div>
-	
-	```python
-	def preprocess_query(query, site_title):
-	    # Convert to lowercase for case-insensitive comparison
-	    query_lower = query.lower()
-	    site_title_lower = site_title.lower()
-	    # Check if the site title is already included in the query
-	    if site_title_lower not in query_lower:
-	        adjust_query =  f"{query}\t{site_title}"
-	        logger.warning(f"adjust_query:'{adjust_query}'")
-	        return adjust_query
-	    return query
-	```
+    <div align="center">
+    <img style="display: block; margin: auto; width: 70%;" src="../image/openim_case2_log.jpg">
+    </div>
+    
+    <div align="center">
+    <img style="display: block; margin: auto; width: 70%;" src="../image/openim_case2_result.jpg">
+    </div>
+    
+    ```python
+    def preprocess_query(query, site_title):
+        # Convert to lowercase for case-insensitive comparison
+        query_lower = query.lower()
+        site_title_lower = site_title.lower()
+        # Check if the site title is already included in the query
+        if site_title_lower not in query_lower:
+            adjust_query =  f"{query}\t{site_title}"
+            logger.warning(f"adjust_query:'{adjust_query}'")
+            return adjust_query
+        return query
+    ```
 
 #### 3.2.3 Query Construction
 
@@ -452,21 +452,21 @@ chain = (
 不改变内容或长度的情况下，对检索到的文档chunk进行重新排序，以增强对LLM更为关键的文档chunk的可见性。具体来说：
 
 1. 基于规则的重新排序
-	根据特定规则，计算度量来重新排序chunk。常见的度量包括：
-	
-	* 多样性
-	* 相关性
-	* 最大边际相关性（Maximal Marginal Relevance）
-	
-	MMR的背后思想是减少冗余并增加结果的多样性，它用于文本摘要。MMR根据查询相关性和信息新颖性的组合标准选择最终关键短语列表中的短语。
+    根据特定规则，计算度量来重新排序chunk。常见的度量包括：
+    
+    * 多样性
+    * 相关性
+    * 最大边际相关性（Maximal Marginal Relevance）
+    
+    MMR的背后思想是减少冗余并增加结果的多样性，它用于文本摘要。MMR根据查询相关性和信息新颖性的组合标准选择最终关键短语列表中的短语。
 
 2. Model-base Rerank
 
-	使用语言模型对文档chunk进行重新排序，可选方案包括：
-	
-	* 来自BERT系列的编解码器模型，如SpanBERT
-	* 专门的重新排序模型，如Cohere rerank或bge-reranker-large
-	* 通用大型语言模型，如GPT-4
+    使用语言模型对文档chunk进行重新排序，可选方案包括：
+    
+    * 来自BERT系列的编解码器模型，如SpanBERT
+    * 专门的重新排序模型，如Cohere rerank或bge-reranker-large
+    * 通用大型语言模型，如GPT-4
 
 #### 3.4.2 过滤
 
@@ -588,16 +588,16 @@ history_context = "\n--------------------\n".join([f"Previous Query: {item['quer
 
 1. 云API基础生成器。通过调用第三方LLM的API来使用，如OpenAI的ChatGPT、GPT-4和百度的文心一言等。
 
-	优点包括：
+    优点包括：
 
-	* 没有服务器压力
-	* 高并发性
-	* 能够使用更强大的模型
+    * 没有服务器压力
+    * 高并发性
+    * 能够使用更强大的模型
 
-	缺点包括：
+    缺点包括：
 
-	* 数据通过第三方，可能引起数据隐私问题
-	* 无法调整模型（在绝大多数情况下）
+    * 数据通过第三方，可能引起数据隐私问题
+    * 无法调整模型（在绝大多数情况下）
 
 2. 本地部署
 本地部署开源或自行开发的LLM，如Llama系列、GLM等。其优点和缺点与基于云API的模型相反。本地部署的模型提供了更大的灵活性和更好的隐私保护，但需要更高的计算资源。
@@ -683,15 +683,15 @@ RAG的核心任务仍然是问答（QA），包括传统的单跳/多跳QA、多
 RAG模型的评估实践强调三个主要的质量得分和四个基本能力，共同为RAG模型的两个主要目标进行评估：`检索`和`生成`。
 
 1. **质量得分**：质量得分包括`上下文相关性`、`答案忠实度`和`答案相关性`。这些质量得分从不同的角度评估RAG模型在信息检索和生成过程中的效率。
-	* 上下文相关性评估检索到的上下文的精确性和特异性，确保相关性并减少与无关内容相关的处理成本。
-	* 答案忠实度确保生成的答案与检索到的上下文保持一致，避免矛盾。
-	* 答案相关性要求生成的答案与提出的问题直接相关，有效回答核心问题。
-	
+    * 上下文相关性评估检索到的上下文的精确性和特异性，确保相关性并减少与无关内容相关的处理成本。
+    * 答案忠实度确保生成的答案与检索到的上下文保持一致，避免矛盾。
+    * 答案相关性要求生成的答案与提出的问题直接相关，有效回答核心问题。
+    
 2. **所需能力**：RAG的评估还涵盖了四个能力，这些能力表明其适应性和效率：`噪声鲁棒性`、`负样本拒绝`、`信息整合`和`反事实鲁棒性`。这些能力对于模型在各种挑战和复杂场景下的性能至关重要，影响着质量得分。
-	* 噪声鲁棒性评估模型处理与问题相关但缺乏实质信息的噪声文档的能力。
-	* 负样本拒绝评估模型在检索到的文档中不包含回答问题所需知识时的判断能力，避免回答无法回答的问题。
-	* 信息整合评估模型从多个文档中合成信息以回答复杂问题的能力。
-	* 反事实鲁棒性测试模型在文档中识别和忽略已知的不准确信息的能力，即使在知道存在潜在错误信息的情况下也能正确处理。
+    * 噪声鲁棒性评估模型处理与问题相关但缺乏实质信息的噪声文档的能力。
+    * 负样本拒绝评估模型在检索到的文档中不包含回答问题所需知识时的判断能力，避免回答无法回答的问题。
+    * 信息整合评估模型从多个文档中合成信息以回答复杂问题的能力。
+    * 反事实鲁棒性测试模型在文档中识别和忽略已知的不准确信息的能力，即使在知道存在潜在错误信息的情况下也能正确处理。
 
 上下文相关性和噪声鲁棒性对于评估检索的质量非常重要，而答案忠实度、答案相关性、负样本拒绝、信息整合和反事实鲁棒性对于评估生成的质量非常重要。
 
@@ -710,7 +710,7 @@ RAG模型的评估实践强调三个主要的质量得分和四个基本能力�
 
 RAG流程中的关键且最可控的指标是检索到的上下文相关性，而Response synthesiser（响应合成器）和LLM微调则专注于答案相关性和忠实度。
 
-## 五、小结
+## 五、总结与展望
 
 目前RAG技术取得了较大进展，主要体现在以下几个方面：
 
@@ -721,16 +721,4 @@ RAG流程中的关键且最可控的指标是检索到的上下文相关性，�
 在生产环境中，除了答案相关性和忠实度之外，RAG系统面临的主要挑战是`响应速度`和`健壮性`。
 
 RAG的应用范围正在扩展到`多模态领域`，将其原理应用于解释和处理图片、视频和代码等多种数据形式。这一拓展突显了RAG在人工智能部署中的重要实际意义，吸引了学术界和工业界的兴趣。以RAG为中心的人工智能应用和支持工具的不断发展证明了RAG生态系统的壮大。随着RAG应用领域的扩大，有必要完善评估方法学，以跟上其发展的步伐。确保准确而具有代表性的性能评估对于充分捕捉RAG对人工智能研究与开发社区的贡献至关重要。
-
-
-
-
-
-
-
-
-
-
-
-
 
