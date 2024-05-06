@@ -15,13 +15,13 @@
 * **Generation（生成）**：将原始问题和检索到的chunk一起输入到LLM中，生成最终答案。
 
 <div align="center">
-<img style="display: block; margin: auto; width: 100%;" src="../image/rag_overview.jpg">
+<img style="display: block; margin: auto; width: 100%;" src="../image/rag_overview/rag_overview.jpg">
 </div>
 
 ### 2.2 RAG在线检索架构
 
 <div align="center">
-<img style="display: block; margin: auto; width: 100%;" src="../image/online_retrieve.jpg">
+<img style="display: block; margin: auto; width: 100%;" src="../image/rag_overview/online_retrieve.jpg">
 </div>
 
 ## 三、RAG流程
@@ -56,7 +56,7 @@
     
     切分后的chunk信息，总共`10`个chunk：
     <div align="center">
-    <img style="display: block; margin: auto; width: 70%;" src="../image/split_1_chunk.jpg">
+    <img style="display: block; margin: auto; width: 70%;" src="../image/rag_overview/split_1_chunk.jpg">
     </div>
     
     ```python
@@ -84,22 +84,22 @@
     
     切分后的chunk信息，总共`28`个chunk，每个chunk包含一对问答：
     <div align="center">
-    <img style="display: block; margin: auto; width: 70%;" src="../image/split_2_chunk.jpg">
+    <img style="display: block; margin: auto; width: 70%;" src="../image/rag_overview/split_2_chunk.jpg">
     </div>
     切分后的某个chunk的问答对信息：
     <div align="center">
-    <img style="display: block; margin: auto; width: 70%;" src="../image/split_2_chunk_qa.jpg">
+    <img style="display: block; margin: auto; width: 70%;" src="../image/rag_overview/split_2_chunk_qa.jpg">
     </div>
 
 3. **增强信息**：
     
     切分后的chunk信息，总共`6`个chunk，每个chunk都包含一批数据索引信息：
     <div align="center">
-    <img style="display: block; margin: auto; width: 70%;" src="../image/split_3_chunk.jpg">
+    <img style="display: block; margin: auto; width: 70%;" src="../image/rag_overview/split_3_chunk.jpg">
     </div>
     切分后的某个chunk的数据索引信息：
     <div align="center">
-    <img style="display: block; margin: auto; width: 70%;" src="../image/split_3_chunk_indices.jpg">
+    <img style="display: block; margin: auto; width: 70%;" src="../image/rag_overview/split_3_chunk_indices.jpg">
     </div>
 
 ##### 3.1.1.1 滑动窗口
@@ -160,7 +160,7 @@ def build_sentence_window_index(
 关键思想是将用于检索的chunk与用于合成的chunk分开。使用较小的chunk可以提高检索的准确性，而较大的chunk可以提供更多的上下文信息。具体来说，一种方法可以涉及检索较小的chunk，然后引用父ID以返回较大的chunk。或者，可以检索单个句子，并返回该句子周围的文本窗口。
 
 <div align="center">
-<img style="display: block; margin: auto; width: 70%;" src="../image/small_to_big.jpg">
+<img style="display: block; margin: auto; width: 70%;" src="../image/rag_overview/small_to_big.jpg">
 </div>
 
 ```python
@@ -270,7 +270,7 @@ class DocumentEmbedder:
 如果需要从许多文档中检索信息，我们需要能够高效地在其中搜索，找到相关信息并将其合成一个带有来源引用的单一答案。对于大型数据库，一种有效的方法是创建两个索引，一个由摘要组成，另一个由文档chunk组成，并进行两步搜索，首先通过摘要筛选出相关文档，然后仅在这个相关组内进行搜索。
 
 <div align="center">
-<img style="display: block; margin: auto; width: 70%;" src="../image/hierarchical_indices.jpg">
+<img style="display: block; margin: auto; width: 70%;" src="../image/rag_overview/hierarchical_indices.jpg">
 </div>
 
 **层级索引**的应用实例：
@@ -312,7 +312,7 @@ RAG的一个主要挑战是它直接依赖用户的原始查询作为检索的�
 这些查询将并行执行，然后将检索到的上下文合并在一个提示中，供LLM合成对初始查询的最终答案。
 
 <div align="center">
-<img style="display: block; margin: auto; width: 70%;" src="../image/query_transformation.jpg">
+<img style="display: block; margin: auto; width: 70%;" src="../image/rag_overview/query_transformation.jpg">
 </div>
 
 1. **退后式提示**，使用LLM生成一个更一般的查询，为其检索我们获得的更一般或高层次的上下文，有助于支撑我们对原始查询的回答。也会对原始查询执行检索，两种上下文都会在最终答案生成步骤中输入到LLM中。
@@ -323,21 +323,21 @@ RAG的一个主要挑战是它直接依赖用户的原始查询作为检索的�
 * 在没有**查询重写**策略时，如果用户输入`"如何部署"`，召回的文档的相关性分数都小于`0.5`，会都被过滤掉，最后GPT无法获得足够的上下文信息，无法回答。
 
 <div align="center">
-<img style="display: block; margin: auto; width: 70%;" src="../image/openim_case1_log.jpg">
+<img style="display: block; margin: auto; width: 70%;" src="../image/rag_overview/openim_case1_log.jpg">
 </div>
 
 <div align="center">
-<img style="display: block; margin: auto; width: 70%;" src="../image/openim_case1_result.jpg">
+<img style="display: block; margin: auto; width: 70%;" src="../image/rag_overview/openim_case1_result.jpg">
 </div>
 
 * 增加**查询重写**策略时，如果用户输入`"如何部署"`，query会被改写为`"如何部署\tOpenIM"`，此时召回的5篇文档的相关性分数都是大于0.5的，可以作为上下文传给GPT，最终GPT给出响应的答案。
 
     <div align="center">
-    <img style="display: block; margin: auto; width: 70%;" src="../image/openim_case2_log.jpg">
+    <img style="display: block; margin: auto; width: 70%;" src="../image/rag_overview/openim_case2_log.jpg">
     </div>
     
     <div align="center">
-    <img style="display: block; margin: auto; width: 70%;" src="../image/openim_case2_result.jpg">
+    <img style="display: block; margin: auto; width: 70%;" src="../image/rag_overview/openim_case2_result.jpg">
     </div>
     
     ```python
@@ -563,7 +563,7 @@ Please format your response as follows:
 2. 更复杂的案例是`CondensePlusContextMode`，在每次互动中，聊天历史和最后一条消息被压缩成新的查询，然后这个查询进入索引，检索到的上下文连同原始用户消息一起传递给LLM以生成答案。
 
 <div align="center">
-<img style="display: block; margin: auto; width: 70%;" src="../image/conversation_history.jpg">
+<img style="display: block; margin: auto; width: 70%;" src="../image/rag_overview/conversation_history.jpg">
 </div>
 
 ```python
@@ -621,11 +621,11 @@ history_context = "\n--------------------\n".join([f"Previous Query: {item['quer
 比如[**OpenIM文档网站**](https://docs.openim.io/)的网站客服机器人，只需要回答和OpenIM网站相关的问题，如果用户咨询其它问题或者LLM给出了和网站无关的答案，都需要进行结果干预。
 
 <div align="center">
-<img style="display: block; margin: auto; width: 70%;" src="../image/postprocess_case_log.jpg">
+<img style="display: block; margin: auto; width: 70%;" src="../image/rag_overview/postprocess_case_log.jpg">
 </div>
 
 <div align="center">
-<img style="display: block; margin: auto; width: 70%;" src="../image/postprocess_case_result.jpg">
+<img style="display: block; margin: auto; width: 70%;" src="../image/rag_overview/postprocess_case_result.jpg">
 </div>
 
 ```python
@@ -753,5 +753,5 @@ https://demo.rentsoft.cn/
 开源说明：RAG-GPT采用Apache 2.0许可，支持免费使用和二次开发。遇到问题时，请在GitHub提Issue或加入我们的`OpenKF开源社区群`讨论。如果您需要更智能的客服系统，请与我们联系。
 
 <div align="center">
-<img style="display: block; margin: auto; width: 70%;" src="../image/open_kf_group_02.jpg">
+<img style="display: block; margin: auto; width: 70%;" src="../image/rag_overview/open_kf_group_02.jpg">
 </div>
