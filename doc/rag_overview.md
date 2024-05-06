@@ -21,7 +21,7 @@
 ### 2.2 RAG在线检索架构
 
 <div align="center">
-<img style="display: block; margin: auto; width: 100%;" src="https://github.com/open-kf/rag-gpt/blob/main/doc/online_retrieve.jpg">
+<img style="display: block; margin: auto; width: 100%;" src="../image/online_retrieve.jpg">
 </div>
 
 ## 三、RAG流程
