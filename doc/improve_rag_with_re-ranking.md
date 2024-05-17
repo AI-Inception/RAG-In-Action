@@ -97,11 +97,34 @@
 
 ![img](../image/improve_rag_with_re-ranking/improve_rag_with_re-ranking_11.webp)
 
+
+## RAG-GPT中的Reranking
+
+**RAG-GPT**始终秉持用户第一，在引入Reranking策略时，优先考虑轻量简介的模型，降低用户使用成本。
+重新排序是更大检索管道的最后一步，目的是避免任何额外的开销，特别是在面向用户的场景中。为此，我们选择了那些占用空间非常小、不需要任何特殊硬件但仍能提供竞争性能的模型。
+
+RAG-GPT中内置了2个Reranking模型：
+
+```python
+# Defines the model used for re-ranking.
+# 'ms-marco-TinyBERT-L-2-v2': Nano (~4MB), blazing fast model & competitive performance (ranking precision).
+# 'ms-marco-MiniLM-L-12-v2': Small (~34MB), slightly slower & best performance (ranking precision).
+RERANK_MODEL_NAME = "ms-marco-MiniLM-L-12-v2"
+```
+
+具体细节可以参考 [rerank](https://github.com/open-kf/rag-gpt/tree/main/server/rag/post_retrieval/rerank)。
+
+
 ## 结论
 
 总之，本文展示了在RAG框架内重新排序的巨大好处。通过实施重新排序过程，我们观察到检索信息的相关性显著提高。这种改进转化为RAG性能的显著提升，因为我们在最大限度地包含相关信息的同时，减少了输入到LLM中的噪音。
 
 通过我们的探索，我们强调了两阶段检索系统在规模和质量性能方面的优势。使用向量搜索实现了大规模的高效搜索，而引入重新排序确保了只有最相关的文档被优先处理，从而提高了RAG框架内结果的整体质量。
+
+
+
+
+
 
 ## 关于我们
 OpenIM是领先的开源即时通讯（IM）平台，目前在GitHub上的星标已超过13k。随着数据和隐私安全的重视以及信息技术的快速发展，政府和企业对于私有部署的IM需求急剧增长。OpenIM凭借“安全可控”的特点，在协同办公软件市场中占据了一席之地。在后AIGC时代，IM作为人机交互的首要接口，其价值愈发重要，OpenIM期待在此时代扮演更关键的角色。
