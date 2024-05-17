@@ -14,7 +14,10 @@
 - Generation（生成）：将原始问题和检索到的chunks整合形成合适的prompt一起输入到LLM中，让LLM输出与上下文有关的回答。
 
 
-![RAG基本流程](../image/rag_overview/online_retrieve.jpg)
+<div align="center">
+<img style="display: block; margin: auto; width: 100%;" src="../image/rag_overview/online_retrieve.jpg">
+</div>
+
 智能文档的在线检索流程可以用一张图说明，上图中展示了一个完整的问答流程：
 
 - 用户发起query
@@ -50,7 +53,7 @@
 - 可以自主选择LLM模型和甚至扩展部署本地模型。
 
 
-### 用RAG-GPT 5分钟搭建智能问答系统
+### RAG-GPT 快速搭建智能问答系统
 
 RAG-GPT的基本组成分为三部分：
 - 智能问答后端服务
@@ -67,9 +70,9 @@ git clone https://github.com/open-kf/RAG-GPT.git && cd RAG-GPT
 
 ##### 2.配置环境变量
 
-在启动RAG-GPT服务之前，我们需要修改相关配置，以便程序正确初始化。
+在启动RAG-GPT服务之前，需要修改相关配置，以便程序正确初始化。
 
-这里我们使用 OpenAI 作为 LLM 底座
+这里使用 OpenAI 作为 LLM 底座
 
 ```python
 cp env_of_openai .env
@@ -88,82 +91,136 @@ USE_PREPROCESS_QUERY=0
 USE_RERANKING=1
 USE_DEBUG=0
 ```
-在启动RAG-GPT服务之前，需要修改`.env`文件中的相关配置。
-- 修改OPENAI_API_KEY="此为你的openai api key"，在[open ai api keys](https://platform.openai.com/api-keys)申请api key（RAG-GPT官方马上将支持国内的智普AI，使用智普ai的api key替换即可）
-- 本地启动时，修改URL_PREFIX="http://127.0.0.1:7000/"
+
+对 .env 中的变量做以下调整：
+
+- 不要修改 **LLM_NAME**。
+- 将 **OPENAI_API_KEY** 替换为你自己的密钥。请登录 (OpenAI 网站)[https://platform.openai.com/api-keys ] 查看你的 API 密钥。
+- 更新 **GPT_MODEL_NAME** 设置，将 `gpt-3.5-turbo` 替换为 `gpt-4-turbo` 或 `gpt-4o`，如果你想使用 GPT-4。
+- 将 **BOT_TOPIC** 更改为你的机器人的名称。这非常重要，因为它将在构造Prompt中使用。我在这里要搭建LangChain网站的智能客服，所以改写为`LangChain`。
+- 调整 **URL_PREFIX** 以匹配你的网站的域名。
+- 有关常量的含义和用法的更多信息，可以查看 server/constant 目录下的文件。
+
+
 ##### 3.执行启动命令
-分别执行以下命令,即可启动，
+
+分别执行以下命令，即可启动。
+
+> [!NOTE]
+> 请使用 Python 3.10.x 或以上版本。
+
 先安装python依赖项
+
 ```shell
 python3 -m venv myenv
- ```
- ```shell
-source myenv/bin/activate
- ```
- ```shell
-pip install -r requirements.txt
- ```
- 启动项目即可：
- ```shell
-python create_sqlite_db.py
-python rag_gpt_app.py
-
- ```
-
-##### 4.快速体验聊天效果
-- 1.启动服务后先打开管理后台，
-首先要登录到管理后台，浏览器输入：http://127.0.0.1:7000/open-kf-admin/#/login账号为：**`admin`** 密码 ：**`open_kf_AIGC@2024`**
-
-- 2.导入知识库，以open im网站为例，在管理后台切换到source tab，输入open im官网地址：https://docs.openim.io/， 点fetch即可一键爬取网站内容作为知识库。
-  ![alt text](..%2Fimage%2Frag_overview%2Frag_gpt_import_res.png)
-等待爬取完成后，点击update即可在向量数据库中建立索引，用于问答时检索内容
-  ![alt text](..%2Fimage%2Frag_overview%2Frag_gpt_indexing.png)
-浏览器打开http://127.0.0.1:7000/open-kf-chatbot/，  即可开始问答
-  ![alt text](..%2Fimage%2Frag_overview%2Frag_gpt_qa_case.png)
-
-
-##### 5.一键嵌入到网站
-RAG-GPT提供了将聊天机器人嵌入到网站的方法，使得用户可以直接在网站上使用智能问答服务。
-打开管理后台菜单切换到embed，复制两个代码即可实现一键嵌入，这两个代码片效果分别如下：一个是iframe嵌入一个聊天窗口，一个是在页面右下角点击弹出聊天窗口。
-可以新建一个文本文件，将代码复制进去,用浏览器打开就可以看到嵌入效果啦：
-```html
-<iframe 
-src="http://127.0.0.1:7000/open-kf-chatbot"
-title="Chatbot"
-style="min-width: 420px;min-height: 60vh"
-frameborder="0"
-></iframe>
-
-<script 
-src="http://127.0.0.1:7000/open-kf-chatbot/embed.js" 
-bot-domain="http://127.0.0.1:7000/open-kf-chatbot" 
-defer
-></script>
 ```
 
-![alt text](..%2Fimage%2Frag_overview%2Frag_gpt_embed_case.png)
+```shell
+source myenv/bin/activate
+```
+
+```shell
+pip install -r requirements.txt
+```
+
+启动项目即可：
+
+```shell
+python create_sqlite_db.py
+python rag_gpt_app.py
+```
+
+或者执行
+
+```shell
+sh start.sh
+```
+
+<div align="center">
+<img style="display: block; margin: auto; width: 100%;" src="../image/langchain_demo/start.jpg">
+</div>
+
+##### 4.快速体验聊天效果
+
+- 启动服务后先打开管理后台，
+首先要登录到管理后台，浏览器输入：http://127.0.0.1:7000/open-kf-admin/#/login账号为：**`admin`** 密码 ：**`open_kf_AIGC@2024`** .
+
+<div align="center">
+<img style="display: block; margin: auto; width: 100%;" src="../image/langchain_demo/login.jpg">
+</div>
+
+- 导入知识库，这里输入LangChain的网站。在管理后台切换到source tab，输入LangChain官网地址：`https://python.langchain.com/v0.1/docs/get_started/introduction/`， 点击 `Fetch more links` 即可一键爬取网站内容作为知识库。
+
+<div align="center">
+<img style="display: block; margin: auto; width: 100%;" src="../image/langchain_demo/submit_sitemap.jpg">
+</div>
+
+在后台可以看到爬取网页URL的日志。
+
+<div align="center">
+<img style="display: block; margin: auto; width: 100%;" src="../image/langchain_demo/crawl_link_log.jpg">
+</div>
+
+获取网站的所有网页URL后，此时网页URL展示的状态是 `Stored`。在管理后台，点击 `Confirm` 提交想要抓取的网页URL（默认抓取获取的所有URL）。
+
+<div align="center">
+<img style="display: block; margin: auto; width: 100%;" src="../image/langchain_demo/crawl_link_result.jpg">
+</div>
+
+等所有网页URL的文本都被抓取，并且存入向量数据库后，在管理后台上所有网页URL展示的状态都是 `Trained` 。
+
+<div align="center">
+<img style="display: block; margin: auto; width: 100%;" src="../image/langchain_demo/crawl_content_log.jpg">
+</div>
+
+<div align="center">
+<img style="display: block; margin: auto; width: 100%;" src="../image/langchain_demo/crawl_content_result.jpg">
+</div>
+
+ 
+浏览器打开http://127.0.0.1:7000/open-kf-chatbot/，就可以访问Bot了。
+
+<div align="center">
+<img style="display: block; margin: auto; width: 100%;" src="../image/langchain_demo/test_01.jpg">
+</div>
+
+##### 5.一键嵌入到网站
+
+RAG-GPT提供了将聊天机器人嵌入到网站的方法，使得用户可以直接在网站上使用智能问答服务。
+打开管理后台菜单切换到embed，复制两个代码即可实现一键嵌入，这两个代码片效果分别如下：一个是iframe嵌入一个聊天窗口，一个是在页面右下角点击弹出聊天窗口。
+可以新建一个文本文件，将代码复制进去，用浏览器打开就可以看到嵌入效果了。
+
+<div align="center">
+<img style="display: block; margin: auto; width: 100%;" src="../image/langchain_demo/admin_embed_js.jpg">
+</div>
+
 
 ##### 6.管理后台其他功能
-- 1. 管理员可以通过仪表板查看用户的历史请求记录，以便进行分析和优化。
-可以按照时间、用户查询聊天记录和修改问答对的答案以更符合自身需求。
-     ![alt text](..%2Fimage%2Frag_overview%2Frag_gpt_admin_dashboard.png)
 
-- 2. 配置聊天对话的UI
-     用户可以定制化聊天对话框的风格，使其更符合自身网站的风格特性。
-     ![alt text](..%2Fimage%2Frag_overview%2Frag_gpt_admin_setting.png)
+- 管理员可以通过仪表板查看用户的历史请求记录，以便进行分析和优化。
+
+可以按照时间、用户查询聊天记录和修改问答对的答案以更符合自身需求。
+
+<div align="center">
+<img style="display: block; margin: auto; width: 100%;" src="../image/langchain_demo/admin_dashboard.jpg">
+</div>
+
+- 配置聊天对话的UI
+用户可以定制化聊天对话框的风格，使其更符合自身网站的风格特性。
+     
+<div align="center">
+<img style="display: block; margin: auto; width: 100%;" src="../image/langchain_demo/admin_setting.jpg">
+</div>
 
 ### 结语
-RAG-GPT项目具备开源免费、易于部署集成、开箱即用和功能丰富的特点，为LLM大模型在特定领域的应用落地提供了一套企业级的解决方案。接下来，RAG-GPT官方将引入本地文件知识库，集成国内LLM大模型等特性，使得RAG-GPT满足更多样化的需求。
+
+RAG-GPT项目具备开源免费、易于部署集成、开箱即用和功能丰富的特点，为LLM大模型在特定领域的应用落地提供了一套企业级的解决方案。RAG-GPT已经支持本地文件知识库，集成国内LLM大模型等特性，使得RAG-GPT满足更多样化的需求。
+
 ### 关于我们
+
 OpenIM是领先的开源即时通讯（IM）平台，目前在GitHub上的星标已超过13k。随着数据和隐私安全的重视以及信息技术的快速发展，政府和企业对于私有部署的IM需求急剧增长。OpenIM凭借“安全可控”的特点，在协同办公软件市场中占据了一席之地。在后AIGC时代，IM作为人机交互的首要接口，其价值愈发重要，OpenIM期待在此时代扮演更关键的角色。
 
-基于这样的视角，我们最近开源了RAG-GPT项目，已被部分企业采用并持续完善中。RAG-GPT的主要特点包括：
-
-内置LLM支持：集成大型语言模型，提升对话质量。
-快速部署：五分钟内可部署生产级对话服务。
-简便维护：基于Python，无需额外中间件。
-灵活配置：可定制的管理控制台，简化操作。
-精美界面：提供吸引人的用户界面设计。
+基于这样的视角，我们最近开源了RAG-GPT项目，已被部分企业采用并持续完善中。
 如果您对RAG-GPT感兴趣，可以访问以下链接了解更多信息：
 
 项目地址： https://github.com/open-kf/rag-gpt
@@ -174,4 +231,6 @@ OpenIM是领先的开源即时通讯（IM）平台，目前在GitHub上的星标
 
 开源说明：RAG-GPT采用Apache 2.0许可，支持免费使用和二次开发。遇到问题时，请在GitHub提Issue或加入我们的OpenKF开源社区群讨论。如果您需要更智能的客服系统，请与我们联系。
 
-![open_kf_group_02.jpg](..%2Fimage%2Frag_overview%2Fopen_kf_group_02.jpg)
+<div align="center">
+<img style="display: block; margin: auto; width: 100%;" src="../image/langchain_demo/open_kf_group_02.jpg">
+</div>

@@ -94,8 +94,8 @@ python rag_gpt_app.py
  ```
 
 ##### 4.快速体验聊天效果
-- 1.启动服务后先打开管理后台，
-首先要登录到管理后台，浏览器输入：http://127.0.0.1:7000/open-kf-admin/#/login账号为：**`admin`** 密码 ：**`open_kf_AIGC@2024`**
+- 1.启动服务后先打开管理后台。
+首先要登录到管理后台，浏览器输入：http://127.0.0.1:7000/open-kf-admin/#/login账号为：**`admin`** 密码 ：**`open_kf_AIGC@2024`** 。
 
 - 2.导入知识库，以open im网站为例，在管理后台切换到source tab，输入open im官网地址：https://docs.openim.io/， 点fetch即可一键爬取网站内容作为知识库。
   ![alt text](..%2Fimage%2Frag_overview%2Frag_gpt_import_res.png)
