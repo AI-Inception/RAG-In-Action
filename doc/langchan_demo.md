@@ -142,14 +142,19 @@ sh start.sh
 
 ##### 4.快速体验聊天效果
 
-- 启动服务后先打开管理后台，
-首先要登录到管理后台，浏览器输入：http://127.0.0.1:7000/open-kf-admin/#/login账号为：**`admin`** 密码 ：**`open_kf_AIGC@2024`** .
+- 启动服务后先打开管理后台。
+
+首先要登录到管理后台，浏览器输入：`http://127.0.0.1:7000/open-kf-admin/`
+登录账号为：**`admin`** 密码 ：**`open_kf_AIGC@2024`** .
 
 <div align="center">
 <img style="display: block; margin: auto; width: 100%;" src="../image/langchain_demo/login.jpg">
 </div>
 
-- 导入知识库，这里输入LangChain的网站。在管理后台切换到source tab，输入LangChain官网地址：`https://python.langchain.com/v0.1/docs/get_started/introduction/`， 点击 `Fetch more links` 即可一键爬取网站内容作为知识库。
+- 导入知识库，这里输入LangChain的网站。
+
+在管理后台切换到source tab，输入LangChain官网地址：`https://python.langchain.com/v0.1/docs/get_started/introduction/`， 
+点击 `Fetch more links` 即可一键爬取网站内容作为知识库。
 
 <div align="center">
 <img style="display: block; margin: auto; width: 100%;" src="../image/langchain_demo/submit_sitemap.jpg">
@@ -206,6 +211,7 @@ RAG-GPT提供了将聊天机器人嵌入到网站的方法，使得用户可以�
 </div>
 
 - 配置聊天对话的UI
+
 用户可以定制化聊天对话框的风格，使其更符合自身网站的风格特性。
      
 <div align="center">
