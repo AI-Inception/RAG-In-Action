@@ -10,7 +10,7 @@
 
 这里的问题是，仅考虑top_k响应可能会错过那些可以提高LLM响应准确性的有价值的上下文。这一限制突显了需要一种更稳健的方法来选择和提供上下文，以确保LLM能够访问到最相关的信息，从而生成准确的响应。
 
-![img](https://miro.medium.com/v2/resize:fit:700/1*ww8U0kq7Wp4cuv5NZ5g54w.png)
+![img](../image/improve_rag_with_re-ranking/improve_rag_with_re-ranking_1.webp)
 
 基于向量搜索的RAG实现
 
@@ -37,7 +37,7 @@
 
 重新排序模型是一种计算给定查询和文档对匹配分数的模型。然后可以利用这个分数重新排列向量搜索结果，确保最相关的结果优先排列在列表顶部。
 
-![img](https://miro.medium.com/v2/resize:fit:700/1*q1QQSnNCu-OoN1Ttgh-AVw.png)
+![img](../image/improve_rag_with_re-ranking/improve_rag_with_re-ranking_2.webp)
 
 基于向量搜索和重新排序的RAG实现
 
@@ -51,33 +51,33 @@
 
 我们还将使用Hugging Face上包含机器学习论文的现有数据集。ArXiv的论文似乎是一个很好的来源，因此我们将使用下面返回的第一个数据源。
 
-![img](https://miro.medium.com/v2/resize:fit:700/1*wQoPEAZWwPHkIk6Nuwnxzw.png)
+![img](../image/improve_rag_with_re-ranking/improve_rag_with_re-ranking_3.webp)
 
 使用Hugging Face的数据集库加载数据集。提到的数据集似乎有超过10万个项目。
 
-![img](https://miro.medium.com/v2/resize:fit:700/1*mcHciKzZAeQxG_aKeKa4iA.jpeg)
+![img](../image/improve_rag_with_re-ranking/improve_rag_with_re-ranking_4.webp)
 
 初始化OpenAI和Pinecone对象
 
-![img](https://miro.medium.com/v2/resize:fit:700/1*mslfyjW6-p7D1nIbvVzfrg.jpeg)
+![img](../image/improve_rag_with_re-ranking/improve_rag_with_re-ranking_5.webp)
 
 创建Pinecone索引以存储嵌入。我们将创建与嵌入模式相匹配的向量维度的索引。例如，ada-002有1536个向量维度。
 
-![img](https://miro.medium.com/v2/resize:fit:700/1*JimspBhKfzJJb4G-UBdveA.jpeg)
+![img](../image/improve_rag_with_re-ranking/improve_rag_with_re-ranking_6.webp)
 
 为了有效地存储和管理来自Hugging Face的数据，其中包括“title”和“abstract”等字段，我们将存储“abstract”字段的嵌入在向量数据库中。此外，我们将包括“title”和“metadata”字段，以维护嵌入数据的纯文本表示。这种方法允许在从向量数据库中检索搜索结果时更容易解释与每个向量相关的数据。
 
 为了在向量存储中存储或更新（upsert）记录，同时保留每个记录的元数据，我们需要定义一个对象映射。此映射将使我们能够将每个向量与其对应的元数据（如标题和其他相关信息）相关联。通过建立此映射，我们可以高效地管理和查询数据，同时保留每个记录的重要上下文细节。有关如何执行带有元数据的upsert操作的更多参考资料，您可以查阅[文档](https://docs.pinecone.io/docs/upsert-data)或特定向量数据库的资源。
 
-![img](https://miro.medium.com/v2/resize:fit:700/1*qbfTKeiVLddOcCdIrK85cQ.jpeg)
+![img](../image/improve_rag_with_re-ranking/improve_rag_with_re-ranking_7.webp)
 
 这是一个重要的步骤，我们为输入数据创建嵌入并将嵌入存储在向量数据库中。
 
-![img](https://miro.medium.com/v2/resize:fit:700/1*r9Xo3kSXhGrDuLC1mIDD0g.png)
+![img](../image/improve_rag_with_re-ranking/improve_rag_with_re-ranking_8.webp)
 
 现在，我们将所有数据嵌入到向量数据库中，尝试用一个简单的问题从数据库中查找详细信息，并得到如下所示的前25个匹配向量的结果。
 
-![img](https://miro.medium.com/v2/resize:fit:700/1*FjfM94wJ8uyp2y_QF6d0-w.jpeg)
+![img](../image/improve_rag_with_re-ranking/improve_rag_with_re-ranking_9.webp)
 
 现在，让我们深入探讨对查询返回的匹配向量进行排序的关键方面。
 
@@ -87,7 +87,7 @@
 
 在下面显示的结果块中，编号为11、24和16的项目根据排名似乎最符合查询。通常情况下，这些块可能会在top_k筛选过程中被忽略，可能导致LLM接收到较少相关的上下文。这凸显了重新排序在提高搜索结果相关性方面的重要性。
 
-![img](https://miro.medium.com/v2/resize:fit:700/1*VXVd9AKda-pW5c2rYt5LGw.jpeg)
+![img](../image/improve_rag_with_re-ranking/improve_rag_with_re-ranking_10.webp)
 
 比较普通搜索结果与重新排序后的搜索结果，块的排名发生了显著变化。例如，普通结果中的第0块被重新排序结果中的第11
 
@@ -95,7 +95,7 @@
 
 让我们考虑比较两个块：普通搜索中的第2块与重新排序搜索中的第16块。这种分析显示了一个明显的区别，表明重新排序搜索中的第16块相比于普通搜索中的第2块更符合我们的查询。这样的比较突显了重新排序在提高结果相关性方面的有效性，并确保在将文档作为上下文传递给LLM之前，顶级文档更符合用户的查询。
 
-![img](https://miro.medium.com/v2/resize:fit:700/1*C4oY8rP95TGVas7PWK4KEQ.jpeg)
+![img](../image/improve_rag_with_re-ranking/improve_rag_with_re-ranking_11.webp)
 
 ## 结论
 
