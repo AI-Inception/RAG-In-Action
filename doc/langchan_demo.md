@@ -65,7 +65,7 @@ RAG-GPT的基本组成分为三部分：
 ##### 1. 下载源代码，通过Git克隆RAG-GPT的GitHub仓库：
 
 ```bash
-git clone https://github.com/open-kf/RAG-GPT.git && cd RAG-GPT
+git clone https://github.com/open-kf/rag-gpt.git && cd rag-gpt
 ```
 
 ##### 2.配置环境变量
