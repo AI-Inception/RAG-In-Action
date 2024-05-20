@@ -1,9 +1,9 @@
-# 使用RAG-GPT快速搭建LangChain官网智能客服
+# 使用RAG-GPT集成智谱AI、DeepSeek快速搭建OpenAI Cookbook智能客服
 
 
 ## 引言
 
-随着GPT等大型语言模型（LLM）能力越来越强大，如何将这些模型精准地应用于特定垂直领域，让各行业开发者快速利用LLM赋能也成为热点和痛点。众所周知，LLM在处理超出其训练数据或涉及最新实事时，常会产生“幻觉”现象，简单理解就是会出现一本正经的胡说八道，回答不准确。针对此问题，RAG通过从外部知识库检索相关文档作为上下文输入到LLM有效地减少了生成内容不符合实际的情况。
+前面介绍了[使用RAG-GPT和OpenAI快速搭建LangChain官网智能客服](https://blog.csdn.net/zhuyingxiao/article/details/139013425)，目前国内也有一些比较不错的云端大模型API服务。本文将介绍通过RAG-GPT集成[智谱AI](https://www.zhipuai.cn/)和[DeepSeek](https://www.deepseek.com/zh)，快速搭建`OpenAI Cookbook`智能客服。
 
 ## RAG技术原理介绍
 
@@ -15,7 +15,7 @@
 
 
 <div align="center">
-<img style="display: block; margin: auto; width: 100%;" src="../image/rag_overview/online_retrieve.jpg">
+<img style="display: block; margin: auto; width: 100%;" src="../image/openai_cookbook_demo/online_retrieve.jpg">
 </div>
 
 智能文档的在线检索流程可以用一张图说明，上图中展示了一个完整的问答流程：
@@ -72,18 +72,18 @@ git clone https://github.com/open-kf/rag-gpt.git && cd rag-gpt
 
 在启动RAG-GPT服务之前，需要修改相关配置，以便程序正确初始化。
 
-这里使用 OpenAI 作为 LLM 底座
+**如果使用`智谱AI`作为LLM底座**
 
 ```python
-cp env_of_openai .env
+cp env_of_zhipuai .env
 ```
 
 .env 文件中的变量
 
 ```python
-LLM_NAME="OpenAI"
-OPENAI_API_KEY="xxxx"
-GPT_MODEL_NAME="gpt-3.5-turbo"
+LLM_NAME="ZhipuAI"
+ZHIPUAI_API_KEY="xxxx"
+GLM_MODEL_NAME="glm-3-turbo"
 MIN_RELEVANCE_SCORE=0.3
 BOT_TOPIC="xxxx"
 URL_PREFIX="http://127.0.0.1:7000/"
@@ -95,12 +95,47 @@ USE_DEBUG=0
 对 .env 中的变量做以下调整：
 
 - 不要修改 **LLM_NAME**。
-- 将 **OPENAI_API_KEY** 替换为你自己的密钥。请登录 (OpenAI 网站)[https://platform.openai.com/api-keys ] 查看你的 API 密钥。
-- 更新 **GPT_MODEL_NAME** 设置，将 `gpt-3.5-turbo` 替换为 `gpt-4-turbo` 或 `gpt-4o`，如果你想使用 GPT-4。
-- 将 **BOT_TOPIC** 更改为你的机器人的名称。这非常重要，因为它将在构造Prompt中使用。我在这里要搭建LangChain网站的智能客服，所以改写为`LangChain`。
+- 将 **ZHIPUAI_API_KEY** 替换为你自己的密钥。请登录[智谱AI网站](https://open.bigmodel.cn/usercenter/apikeys)查看你的 API 密钥。
+- 更新 **GLM_MODEL_NAME** 设置，将 `glm-3-turbo` 替换为 `glm-4`，如果你想使用GLM-4。
+- 将 **BOT_TOPIC** 更改为你的机器人的名称。这非常重要，因为它将在`构造Prompt`中使用。我在这里要搭建OpenAI Cookbook网站的智能客服，所以改写为`OpenAI Cookbook`。
 - 调整 **URL_PREFIX** 以匹配你的网站的域名。
 - 有关常量的含义和用法的更多信息，可以查看 server/constant 目录下的文件。
 
+
+**如果使用`DeepSeek`作为LLM底座**
+
+> [!NOTE]
+> DeepSeek没有提供Embedding API，这里使用ZhipuAI的Embedding API。
+> 我们需要同时准备`ZHIPUAI_API_KEY`和`DEEPSEEK_API_KEY`。
+
+```python
+cp env_of_deepseek .env
+```
+
+.env 文件中的变量
+
+```python
+LLM_NAME="DeepSeek"
+ZHIPUAI_API_KEY="xxxx"
+DEEPSEEK_API_KEY="xxxx"
+DEEPSEEK_MODEL_NAME="deepseek-chat"
+MIN_RELEVANCE_SCORE=0.3
+BOT_TOPIC="xxxx"
+URL_PREFIX="http://127.0.0.1:7000/"
+USE_PREPROCESS_QUERY=0
+USE_RERANKING=1
+USE_DEBUG=0
+```
+
+对 .env 中的变量做以下调整：
+
+- 不要修改 **LLM_NAME**。
+- 将 **ZHIPUAI_API_KEY** 替换为你自己的密钥。请登录[智谱AI网站](https://open.bigmodel.cn/usercenter/apikeys)查看你的 API 密钥。
+- 将 **DEEPSEEK_API_KEY** 替换为你自己的密钥。请登录[DeepSeek网站](https://platform.deepseek.com/api_keys)查看你的 API 密钥。
+- 更新 **DEEPSEEK_MODEL_NAME** 设置，目前只有`deepseek-chat`这个合适的选项。
+- 将 **BOT_TOPIC** 更改为你的机器人的名称。这非常重要，因为它将在`构造Prompt`中使用。我在这里要搭建OpenAI Cookbook网站的智能客服，所以改写为`OpenAI Cookbook`。
+- 调整 **URL_PREFIX** 以匹配你的网站的域名。
+- 有关常量的含义和用法的更多信息，可以查看 server/constant 目录下的文件。
 
 ##### 3.执行启动命令
 
@@ -137,7 +172,7 @@ sh start.sh
 ```
 
 <div align="center">
-<img style="display: block; margin: auto; width: 100%;" src="../image/langchain_demo/start.jpg">
+<img style="display: block; margin: auto; width: 100%;" src="../image/openai_cookbook_demo/start.jpg">
 </div>
 
 ##### 4.快速体验聊天效果
@@ -148,45 +183,50 @@ sh start.sh
 登录账号为：**`admin`** 密码 ：**`open_kf_AIGC@2024`** .
 
 <div align="center">
-<img style="display: block; margin: auto; width: 100%;" src="../image/langchain_demo/login.jpg">
+<img style="display: block; margin: auto; width: 100%;" src="../image/openai_cookbook_demo/login.jpg">
 </div>
 
 - 导入知识库，这里输入LangChain的网站。
 
-在管理后台切换到source tab，输入LangChain官网地址：`https://python.langchain.com/v0.1/docs/get_started/introduction/`， 
-点击 `Fetch more links` 即可一键爬取网站内容作为知识库。
+在管理后台切换到 `Source` tab，输入想要抓取的`OpenAI Cookbook`的网页地址列表：
+
+```shell
+https://cookbook.openai.com/
+https://cookbook.openai.com/examples/gpt4o/introduction_to_gpt4o
+https://cookbook.openai.com/examples/batch_processing
+https://cookbook.openai.com/examples/assistants_api_overview_python
+https://cookbook.openai.com/examples/gpt_with_vision_for_video_understanding
+https://cookbook.openai.com/examples/multimodal/using_gpt4_vision_with_function_calling
+https://cookbook.openai.com/examples/creating_slides_with_assistants_api_and_dall-e3
+https://cookbook.openai.com/examples/parse_pdf_docs_for_rag
+https://cookbook.openai.com/examples/custom_image_embedding_search
+https://cookbook.openai.com/examples/evaluation/evaluate_rag_with_llamaindex
+```
+
+点击 `Submit` 即可一键爬取上面网页的内容作为知识库。
 
 <div align="center">
-<img style="display: block; margin: auto; width: 100%;" src="../image/langchain_demo/submit_sitemap.jpg">
+<img style="display: block; margin: auto; width: 100%;" src="../image/openai_cookbook_demo/submit_urls.jpg">
 </div>
 
-在后台可以看到爬取网页URL的日志。
+获取网站的所有网页URL后，此时网页URL展示的状态是 `Recorded`。 服务端会通过一个异步任务处理网页内容抓取，并且计算Embedding，然后存入向量数据库。
+
+服务端处理完后，可以看到爬取网页URL的日志。
 
 <div align="center">
-<img style="display: block; margin: auto; width: 100%;" src="../image/langchain_demo/crawl_link_log.jpg">
+<img style="display: block; margin: auto; width: 100%;" src="../image/openai_cookbook_demo/crawl_content_log.jpg">
 </div>
 
-获取网站的所有网页URL后，此时网页URL展示的状态是 `Recorded`。在管理后台，点击 `Confirm` 提交想要抓取的网页URL（默认抓取获取的所有URL）。
+在admin页面，在管理后台上所有网页URL展示的状态都是 `Trained` 。
 
 <div align="center">
-<img style="display: block; margin: auto; width: 100%;" src="../image/langchain_demo/crawl_link_result.jpg">
+<img style="display: block; margin: auto; width: 100%;" src="../image/openai_cookbook_demo/crawl_content_result.jpg">
 </div>
-
-等所有网页URL的文本都被抓取，并且存入向量数据库后，在管理后台上所有网页URL展示的状态都是 `Trained` 。
-
-<div align="center">
-<img style="display: block; margin: auto; width: 100%;" src="../image/langchain_demo/crawl_content_log.jpg">
-</div>
-
-<div align="center">
-<img style="display: block; margin: auto; width: 100%;" src="../image/langchain_demo/crawl_content_result.jpg">
-</div>
-
  
 浏览器打开http://127.0.0.1:7000/open-kf-chatbot/，就可以访问Bot了。
 
 <div align="center">
-<img style="display: block; margin: auto; width: 100%;" src="../image/langchain_demo/test_01.jpg">
+<img style="display: block; margin: auto; width: 100%;" src="../image/openai_cookbook_demo/test_01.jpg">
 </div>
 
 ##### 5.一键嵌入到网站
@@ -196,9 +236,8 @@ RAG-GPT提供了将聊天机器人嵌入到网站的方法，使得用户可以�
 可以新建一个文本文件，将代码复制进去，用浏览器打开就可以看到嵌入效果了。
 
 <div align="center">
-<img style="display: block; margin: auto; width: 100%;" src="../image/langchain_demo/admin_embed_js.jpg">
+<img style="display: block; margin: auto; width: 100%;" src="../image/openai_cookbook_demo/admin_embed_js.jpg">
 </div>
-
 
 ##### 6.管理后台其他功能
 
@@ -207,7 +246,7 @@ RAG-GPT提供了将聊天机器人嵌入到网站的方法，使得用户可以�
 可以按照时间、用户查询聊天记录和修改问答对的答案以更符合自身需求。
 
 <div align="center">
-<img style="display: block; margin: auto; width: 100%;" src="../image/langchain_demo/admin_dashboard.jpg">
+<img style="display: block; margin: auto; width: 100%;" src="../image/openai_cookbook_demo/admin_dashboard.jpg">
 </div>
 
 - 配置聊天对话的UI
@@ -215,7 +254,7 @@ RAG-GPT提供了将聊天机器人嵌入到网站的方法，使得用户可以�
 用户可以定制化聊天对话框的风格，使其更符合自身网站的风格特性。
      
 <div align="center">
-<img style="display: block; margin: auto; width: 100%;" src="../image/langchain_demo/admin_setting.jpg">
+<img style="display: block; margin: auto; width: 100%;" src="../image/openai_cookbook_demo/admin_setting.jpg">
 </div>
 
 ### 结语
@@ -238,5 +277,5 @@ OpenIM是领先的开源即时通讯（IM）平台，目前在GitHub上的星标
 开源说明：RAG-GPT采用Apache 2.0许可，支持免费使用和二次开发。遇到问题时，请在GitHub提Issue或加入我们的OpenKF开源社区群讨论。如果您需要更智能的客服系统，请与我们联系。
 
 <div align="center">
-<img style="display: block; margin: auto; width: 100%;" src="../image/langchain_demo/open_kf_group_02.jpg">
+<img style="display: block; margin: auto; width: 100%;" src="../image/openai_cookbook_demo/open_kf_group_02.jpg">
 </div>
