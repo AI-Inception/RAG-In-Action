@@ -186,7 +186,7 @@ sh start.sh
 <img style="display: block; margin: auto; width: 100%;" src="../image/openai_cookbook_demo/login.jpg">
 </div>
 
-- 导入知识库，这里输入LangChain的网站。
+- 导入知识库，这里输入OpenAI Cookbook的网页URL。
 
 在管理后台切换到 `Source` tab，输入想要抓取的`OpenAI Cookbook`的网页地址列表：
 
