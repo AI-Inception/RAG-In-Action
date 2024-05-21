@@ -7,4 +7,5 @@
 - [通过重新排序改进检索增强生成 (RAG)](doc/improve_rag_with_re-ranking.md)
 - [使用RAG-GPT快速搭建LangChain官网智能客服](doc/langchan_demo.md)
 - [使用RAG-GPT集成智谱AI、DeepSeek快速搭建OpenAI Cookbook智能客服](doc/openai_cookbook_demo.md)
+- [RAG-GPT实践过程中遇到的挑战](doc/rag_gpt_engineering_problems.md)
 
