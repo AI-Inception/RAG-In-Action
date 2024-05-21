@@ -72,14 +72,15 @@ LLM底座的选择还有一个需要特别关注点，**推理成本**。通常�
 **Chinese Open Ended Generation Evaluation**
 
 <div align="center">
-<img style="display: block; margin: auto; width: 100%;" src="../image/rag_gpt_engineering_problems/llm_ alignbench.jpg">
+<img style="display: block; margin: auto; width: 100%;" src="../image/rag_gpt_engineering_problems/llm_alignbench.jpg">
 </div>
 
 **Price of LLM API**
 
 <div align="center">
-<img style="display: block; margin: auto; width: 100%;" src="../image/rag_gpt_engineering_problems/llm_ alignbench.jpg">
+<img style="display: block; margin: auto; width: 100%;" src="../image/rag_gpt_engineering_problems/llm_api_price.jpg">
 </div>
+
 
 RAG系统的最后阶段是从生成的文本中提取答案。上层应用需要从提示中过滤噪音，遵守格式指示(例如，将问题的答案作为选项列表提供)，并生成要返回的查询输出。实现RAG系统需要定制多个提示来处理问题和答案。这一过程确保返回与领域相关的问题。使用大型语言模型从文档中回答实时问题，开启了问答作为新能力的新应用领域。
 
