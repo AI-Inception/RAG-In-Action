@@ -10,4 +10,5 @@
 - [RAG-GPT实践过程中遇到的挑战](doc/rag_gpt_engineering_problems.md)
 - [使用RAG-GPT和Ollama搭建智能客服](doc/ollama_demo.md)
 - [OpenIM Bot: 用LLM构建企业专属的智能客服](doc/openim_bot.md)
+- [小鲤AI志愿填报助手：一键探索最适合你的大学专业](doc/gaokao_assistant.md)
 
