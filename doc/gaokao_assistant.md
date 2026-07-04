@@ -1,3 +1,4 @@
+> **Last Verified**: 2026-07-04
 
 # 小鲤AI志愿填报助手：一键探索最适合你的大学专业
 
@@ -302,7 +303,7 @@ class ExcelTableProcessor:
 
 GitHub地址： https://github.com/gpt-open/rag-gpt
 
-在线Demo： https://demo.rentsoft.cn/
+在线Demo： ~~https://demo.rentsoft.cn/~~ (offline)
 
 我们的目标是改进文件管理功能，更有效地管理数据，并整合企业级知识库。欢迎大家在GitHub上Star并关注，支持我们的开源旅程。
 

@@ -1,3 +1,5 @@
+> **Last Verified**: 2026-07-04
+
 # 通过重新排序改进检索增强生成 (RAG)
 
 ## 引言
@@ -141,7 +143,7 @@ GitHub地址： https://github.com/open-kf/rag-gpt
 
 实现方案：https://blog.csdn.net/zhuyingxiao/article/details/138796932
 
-在线 Demo： https://demo.rentsoft.cn/
+在线 Demo： ~~https://demo.rentsoft.cn/~~ (offline)
 
 我们的目标是改进文件管理功能，更有效地管理数据，并整合企业级知识库。欢迎大家在GitHub上Star并关注，支持我们的开源旅程。
 

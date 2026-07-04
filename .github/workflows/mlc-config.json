@@ -1,0 +1,20 @@
+{
+  "retryOn429": true,
+  "retryCount": 3,
+  "fallbackRetryDelay": "10s",
+  "aliveStatusCodes": [200, 403, 405],
+  "ignorePatterns": [
+    {
+      "pattern": "^https?://127\\.0\\.0\\.1"
+    },
+    {
+      "pattern": "^https?://192\\.168\\."
+    },
+    {
+      "pattern": "^https?://localhost"
+    },
+    {
+      "pattern": "demo\\.rentsoft\\.cn"
+    }
+  ]
+}

@@ -1,3 +1,5 @@
+> **Last Verified**: 2026-07-04
+
 # RAG-GPT实践过程中遇到的挑战
 
 
@@ -174,7 +176,7 @@ OpenIM是领先的开源即时通讯（IM）平台，目前在GitHub上的星标
 
 项目地址： https://github.com/open-kf/rag-gpt
 
-在线Demo： https://demo.rentsoft.cn/
+在线Demo： ~~https://demo.rentsoft.cn/~~ (offline)
 
 我们的目标是改进文件管理功能，更有效地管理数据，并整合企业级知识库。欢迎大家在GitHub上Star并关注，支持我们的开源旅程。
 

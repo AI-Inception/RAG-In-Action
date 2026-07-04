@@ -1,4 +1,11 @@
 # RAG-In-Action
+
+> **Archive Notice**: This repository was last actively maintained in June 2024.
+> Content may reference outdated library versions and APIs.
+> For the latest RAG practices, refer to official documentation of
+> [LangChain](https://python.langchain.com/),
+> [LlamaIndex](https://docs.llamaindex.ai/), and your LLM provider.
+
 使用GPT + RAG项目实战经验总结
 
 ## 目录
